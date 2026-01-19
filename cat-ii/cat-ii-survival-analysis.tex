@@ -1,0 +1,471 @@
+\documentclass[9pt,xcolor=dvipsnames,aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,graphicx,tikz,pgfplots,booktabs,siunitx}
+\usetikzlibrary{arrows,shapes,decorations.pathmorphing,decorations.pathreplacing,decorations.snapping,fit,positioning,calc,intersections,shapes.geometric,backgrounds}
+\usetheme[numbering=fraction,titleformat=smallcaps,sectionpage=progressbar]{metropolis}
+\usepackage[style=authoryear]{biblatex}
+\addbibresource{references.bib}
+\setbeamertemplate{bibliography item}[text]
+\graphicspath{{../assets/}}
+\DeclareMathOperator{\e}{e}
+\title{\Large SDS6210: Informatics for Health\\[0.3em]\small CAT II: Survival Analysis and Maximum Likelihood Estimation}
+\author{\textbf{Cavin Otieno}}
+\institute{MSc Public Health Data Science\\Department of Health Informatics}
+\date{\today}
+\begin{document}
+\begin{frame}[noframenumbering,plain]
+    \maketitleslide
+\end{frame}
+\section{Survival Function and Hazard Function}
+\begin{frame}{Definition: Survival Function $S(x)$}
+The survival function $S(x)$ represents the probability that an individual survives beyond time $x$. It is a fundamental concept in survival analysis, used extensively in clinical epidemiology to characterize time-to-event data such as time to death, disease recurrence, or hospital readmission.
+
+Mathematically, if $T$ is a non-negative continuous random variable representing time to the event of interest, the survival function is defined as:
+\[
+S(x) = P(T > x) = 1 - F(x)
+\]
+where $F(x)$ is the cumulative distribution function (CDF) of $T$.
+
+The survival function has the following properties:
+\begin{enumerate}
+\item $S(0) = 1$: At time zero, all individuals are alive (event has not occurred)
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+\item $\lim_{x \to \infty} S(x) = 0$: As time approaches infinity, the probability of survival approaches zero
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+\item $S(x)$ is non-increasing: As time increases, survival probability cannot increase
+\end{enumerate}
+
+For parametric survival distributions, common forms include:
+\begin{align*}
+\text{Exponential: } & S(x) = e^{-\lambda x} \\
+\text{Weibull: } & S(x) = e^{-(\lambda x)^\gamma} \\
+\text{Log-normal: } & S(x) = \Phi\left(\frac{\log x - \mu}{\sigma}\right)
+\end{align*}
+where $\Phi(\cdot)$ is the standard normal CDF.
+\end{frame}
+\begin{frame}{Hazard Function $h(x)$}
+The hazard function (or hazard rate) represents the instantaneous rate of event occurrence at time $x$, conditional on survival up to time $x$. Unlike the survival function which provides cumulative information, the hazard function characterizes the instantaneous risk.
+
+The hazard function is defined as:
+\[
+h(x) = \lim_{\Delta x \to 0} \frac{P(x \leq T < x + \Delta x | T \geq x)}{\Delta x}
+\]
+
+This can be expressed in terms of the probability density function $f(x)$ and survival function $S(x)$:
+\[
+h(x) = \frac{f(x)}{S(x)} = -\frac{d}{dx} \log S(x)
+\]
+
+The relationship between hazard and survival functions is:
+\[
+S(x) = \exp\left(-\int_{0}^{x} h(u) \, du\right)
+\]
+
+The integral of the hazard function is called the cumulative hazard function:
+\[
+H(x) = \int_{0}^{x} h(u) \, du = -\log S(x)
+\]
+
+For parametric distributions:
+\begin{align*}
+\text{Exponential: } & h(x) = \lambda \\
+\text{Weibull: } & h(x) = \lambda \gamma (\lambda x)^{\gamma-1}
+\end{align*}
+The exponential distribution has a constant hazard (memoryless property), while the Weibull distribution allows for increasing or decreasing hazards depending on the shape parameter $\gamma$.
+\end{frame}
+\begin{frame}{Derivation: Relationship Between $S(x)$ and $h(x)$}
+We derive the fundamental relationship between survival and hazard functions:
+
+Starting with the definition of conditional probability:
+\[
+P(x \leq T < x + \Delta x | T \geq x) = \frac{P(x \leq T < x + \Delta x)}{P(T \geq x)}
+\]
+
+For small $\Delta x$:
+\[
+P(x \leq T < x + \Delta x) \approx f(x) \Delta x
+\]
+\[
+P(T \geq x) = S(x)
+\]
+
+Therefore:
+\[
+\frac{P(x \leq T < x + \Delta x | T \geq x)}{\Delta x} \approx \frac{f(x) \Delta x}{S(x) \Delta x} = \frac{f(x)}{S(x)}
+\]
+
+Taking the limit as $\Delta x \to 0$:
+\[
+h(x) = \frac{f(x)}{S(x)}
+\]
+
+Now, differentiating the survival function:
+\[
+\frac{d}{dx} S(x) = \frac{d}{dx} P(T > x) = -f(x)
+\]
+
+Substituting into the hazard expression:
+\[
+h(x) = -\frac{d}{dx} \log S(x)
+\]
+
+Integrating both sides:
+\[
+\int_{0}^{x} h(u) \, du = -\log S(x) \implies S(x) = \exp\left(-\int_{0}^{x} h(u) \, du\right)
+\]
+\end{frame}
+\begin{frame}{Visualization: Survival and Hazard Functions}
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+\begin{axis}[
+    axis lines=middle,
+    xlabel={Time ($x$)},
+    ylabel={Probability},
+    xmin=0, xmax=10,
+    ymin=0, ymax=1,
+    legend pos=south east,
+    width=0.65\textwidth,
+    height=0.45\textwidth,
+    domain=0:10
+]
+\addplot[blue,thick,samples=200] {exp(-0.3*x)};
+\addlegendentry{Exponential $S(x) = e^{-0.3x}$ (Constant Hazard)}
+\addplot[red,thick,samples=200] {exp(-0.15*x^1.5)};
+\addlegendentry{Weibull $S(x) = e^{-0.15x^{1.5}}$ (Increasing Hazard)}
+\addplot[green,thick,samples=200] {exp(-0.5*sqrt(x))};
+\addlegendentry{Weibull $S(x) = e^{-0.5\sqrt{x}}$ (Decreasing Hazard)}
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+\begin{axis}[
+    axis lines=middle,
+    xlabel={Time ($x$)},
+    ylabel={Hazard Rate},
+    xmin=0, xmax=10,
+    ymin=0, ymax=2,
+    legend pos=north west,
+    width=0.65\textwidth,
+    height=0.45\textwidth,
+    domain=0.1:10
+]
+\addplot[blue,thick,samples=200] {0.3};
+\addlegendentry{Exponential $h(x) = 0.3$ (Constant)}
+\addplot[red,thick,samples=200] {0.15*1.5*(0.15^(0.5))*(x^0.5)};
+\addlegendentry{Weibull (Increasing)}
+\addplot[green,thick,samples=200] {0.5*0.5*(0.5^0.5)*(x^(-0.5))};
+\addlegendentry{Weibull (Decreasing)}
+\end{axis}
+\end{tikzpicture}
+\end{center}
+\end{frame}
+\section{Maximum Likelihood Estimation}
+\begin{frame}{Maximum Likelihood Estimation: Fundamentals}
+Maximum Likelihood Estimation (MLE) is a general method for estimating unknown parameters in statistical models. The MLE finds parameter values that maximize the likelihood of observing the actual sample data.
+
+For a sample of independent observations $x_1, x_2, \ldots, x_n$ from a distribution with probability density function $f(x;\theta)$ parameterized by $\theta$, the likelihood function is:
+\[
+L(\theta) = \prod_{i=1}^{n} f(x_i;\theta)
+\]
+
+It is often computationally convenient to work with the log-likelihood:
+\[
+\ell(\theta) = \log L(\theta) = \sum_{i=1}^{n} \log f(x_i;\theta)
+\]
+
+The MLE $\hat{\theta}$ maximizes $\ell(\theta)$:
+\[
+\hat{\theta} = \arg\max_{\theta} \ell(\theta)
+\]
+
+Under regularity conditions, MLEs have desirable properties:
+\begin{itemize}
+\item \textbf{Consistency}: $\hat{\theta} \xrightarrow{p} \theta$ as $n \to \infty$
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Asymptotic normality}: $\sqrt{n}(\hat{\theta} - \theta) \xrightarrow{d} N(0, I^{-1}(\theta))$
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Efficiency}: Achieves the Cramér-Rao lower bound asymptotically
+\end{itemize}
+
+where $I(\theta)$ is the Fisher information matrix.
+\end{frame}
+\begin{frame}{MLE Derivation: Exponential Distribution Example}
+Consider $n$ independent survival times $t_1, t_2, \ldots, t_n$ from an exponential distribution with rate parameter $\lambda$:
+\[
+f(t;\lambda) = \lambda e^{-\lambda t}, \quad t \geq 0
+\]
+
+The likelihood function:
+\[
+L(\lambda) = \prod_{i=1}^{n} \lambda e^{-\lambda t_i} = \lambda^n e^{-\lambda \sum_{i=1}^{n} t_i}
+\]
+
+The log-likelihood:
+\[
+\ell(\lambda) = n \log \lambda - \lambda \sum_{i=1}^{n} t_i
+\]
+
+To find the MLE, differentiate with respect to $\lambda$ and set to zero:
+\[
+\frac{d\ell}{d\lambda} = \frac{n}{\lambda} - \sum_{i=1}^{n} t_i = 0
+\]
+
+Solving for $\lambda$:
+\[
+\hat{\lambda} = \frac{n}{\sum_{i=1}^{n} t_i} = \frac{1}{\bar{t}}
+\]
+
+The second derivative confirms this is a maximum:
+\[
+\frac{d^2\ell}{d\lambda^2} = -\frac{n}{\lambda^2} < 0
+\]
+
+Thus, the MLE of the exponential rate parameter is the reciprocal of the sample mean survival time.
+\end{frame}
+\begin{frame}{MLE with Censored Data}
+In survival analysis, censoring occurs when the event of interest is not observed for all subjects. Right-censoring is most common: subjects are followed until either the event occurs or the study ends (whichever comes first).
+
+Let $i = 1, \ldots, n$ subjects with:
+\begin{itemize}
+\item $t_i$: Observed time (event time or censoring time)
+\end{itemize}
+
+\begin{itemize}
+\item $\delta_i$: Censoring indicator ($\delta_i = 1$ if event observed, $\delta_i = 0$ if censored)
+\end{itemize}
+
+The contribution of each observation to the likelihood is:
+\[
+L_i(\theta) = 
+\begin{cases}
+f(t_i;\theta) & \text{if } \delta_i = 1 \text{ (event observed)} \\
+S(t_i;\theta) & \text{if } \delta_i = 0 \text{ (censored)}
+\end{cases}
+\]
+
+The full likelihood for censored survival data:
+\[
+L(\theta) = \prod_{i=1}^{n} \left[f(t_i;\theta)\right]^{\delta_i} \left[S(t_i;\theta)\right]^{1-\delta_i}
+\]
+
+For the exponential distribution with censoring:
+\[
+\ell(\lambda) = \sum_{i=1}^{n} \left[\delta_i \log \lambda - \lambda t_i\right]
+\]
+
+The MLE remains:
+\[
+\hat{\lambda} = \frac{\sum_{i=1}^{n} \delta_i}{\sum_{i=1}^{n} t_i} = \frac{\text{Number of events}}{\text{Total person-time}}
+\]
+\end{frame}
+\section{Cox Proportional Hazards Model}
+\begin{frame}{Cox Proportional Hazards Model: Definition}
+The Cox proportional hazards model, developed by Sir David Cox in 1972, is the most widely used semi-parametric model for survival data. It allows estimation of the effect of covariates on the hazard rate without specifying the baseline hazard function.
+
+The model specification is:
+\[
+h(t; \mathbf{x}) = h_0(t) \exp\left(\beta_1 x_1 + \beta_2 x_2 + \cdots + \beta_p x_p\right)
+\]
+where:
+\begin{itemize}
+\item $h(t; \mathbf{x})$: Hazard function for subject with covariates $\mathbf{x} = (x_1, \ldots, x_p)$
+\end{itemize}
+
+\begin{itemize}
+\item $h_0(t)$: Baseline hazard function (hazard when all covariates equal zero)
+\end{itemize}
+
+\begin{itemize}
+\item $\beta_1, \ldots, \beta_p$: Regression coefficients
+\end{itemize}
+
+The proportional hazards assumption requires that the hazard ratio between any two individuals is constant over time:
+\[
+\frac{h(t; \mathbf{x}_1)}{h(t; \mathbf{x}_2)} = \exp\left[\boldsymbol{\beta}'(\mathbf{x}_1 - \mathbf{x}_2)\right]
+\]
+
+The exponentiated coefficients have direct interpretation as hazard ratios. If $x_j$ is a binary treatment variable:
+\[
+\exp(\beta_j) = \frac{\text{Hazard for treated}}{\text{Hazard for control}}
+\]
+\end{frame}
+\begin{frame}{Partial Likelihood for Cox Model}
+Cox's key insight was that the baseline hazard $h_0(t)$ need not be specified. The likelihood function (partial likelihood) depends only on the covariate effects.
+
+For subjects who experience events at distinct times $t_1 < t_2 < \ldots < t_K$ (where $K$ is the number of events), the partial likelihood is:
+\[
+L_P(\boldsymbol{\beta}) = \prod_{k=1}^{K} \frac{\exp\left[\boldsymbol{\beta}' \mathbf{x}_{(k)}\right]}{\sum_{j \in R(t_k)} \exp\left[\boldsymbol{\beta}' \mathbf{x}_j\right]}
+\]
+where:
+\begin{itemize}
+\item $\mathbf{x}_{(k)}$: Covariate vector for the subject who fails at time $t_k$
+\end{itemize}
+
+\begin{itemize}
+\item $R(t_k)$: Risk set at time $t_k$ (all subjects still under observation just before $t_k$)
+\end{itemize}
+
+The log-partial likelihood is:
+\[
+\ell_P(\boldsymbol{\beta}) = \sum_{k=1}^{K} \left[\boldsymbol{\beta}' \mathbf{x}_{(k)} - \log \sum_{j \in R(t_k)} \exp\left(\boldsymbol{\beta}' \mathbf{x}_j\right)\right]
+\]
+
+The MLE $\hat{\boldsymbol{\beta}}$ maximizes $\ell_P(\boldsymbol{\beta})$ and is found using Newton-Raphson or similar iterative algorithms.
+\end{frame}
+\begin{frame}{Derivation: Cox Model Score and Information}
+The score vector is the derivative of the log-partial likelihood:
+\[
+\mathbf{U}(\boldsymbol{\beta}) = \frac{\partial \ell_P(\boldsymbol{\beta})}{\partial \boldsymbol{\beta}} = \sum_{k=1}^{K} \left[\mathbf{x}_{(k)} - \frac{\sum_{j \in R(t_k)} \mathbf{x}_j \exp\left(\boldsymbol{\beta}' \mathbf{x}_j\right)}{\sum_{j \in R(t_k)} \exp\left(\boldsymbol{\beta}' \mathbf{x}_j\right)}\right]
+\]
+
+The observed information matrix is:
+\[
+\mathbf{I}(\boldsymbol{\beta}) = -\frac{\partial^2 \ell_P(\boldsymbol{\beta})}{\partial \boldsymbol{\beta} \partial \boldsymbol{\beta}'} = \sum_{k=1}^{K} \left[\frac{\sum_{j \in R(t_k)} \mathbf{x}_j \mathbf{x}_j' \exp\left(\boldsymbol{\beta}' \mathbf{x}_j\right)}{\sum_{j \in R(t_k)} \exp\left(\boldsymbol{\beta}' \mathbf{x}_j\right)} - \bar{\mathbf{x}}_w \bar{\mathbf{x}}_w'\right]
+\]
+where $\bar{\mathbf{x}}_w$ is the weighted mean of covariates in the risk set.
+
+The asymptotic variance of $\hat{\boldsymbol{\beta}}$ is estimated by the inverse of the observed information:
+\[
+\widehat{\text{Var}}(\hat{\boldsymbol{\beta}}) = \mathbf{I}(\hat{\boldsymbol{\beta}})^{-1}
+\]
+
+Wald confidence intervals for hazard ratios are constructed as:
+\[
+\exp\left(\hat{\beta}_j \pm z_{1-\alpha/2} \sqrt{\widehat{\text{Var}}(\hat{\beta}_j)}\right)
+\]
+where $z_{1-\alpha/2}$ is the standard normal quantile.
+\end{frame}
+\begin{frame}{Stratified Cox Model and Time-Dependent Covariates}
+The Cox model can be extended to handle violations of the proportional hazards assumption:
+
+\textbf{Stratified Cox Model}:
+When the proportional hazards assumption fails for a categorical variable with $S$ strata:
+\[
+h_s(t; \mathbf{x}) = h_{0s}(t) \exp\left(\boldsymbol{\beta}' \mathbf{x}\right), \quad s = 1, \ldots, S
+\]
+Each stratum has its own baseline hazard $h_{0s}(t)$, but the covariate effects $\boldsymbol{\beta}$ are assumed constant across strata. The partial likelihood sums over events within each stratum.
+
+\textbf{Time-Dependent Covariates}:
+When covariate effects change over time:
+\[
+h(t; \mathbf{x}(t)) = h_0(t) \exp\left[\beta_1 x_1(t) + \beta_2 x_2\right]
+\]
+The partial likelihood accounts for covariate values at each event time:
+\[
+L_P(\boldsymbol{\beta}) = \prod_{k=1}^{K} \frac{\exp\left[\boldsymbol{\beta}' \mathbf{x}(t_k)\right]}{\sum_{j \in R(t_k)} \exp\left[\boldsymbol{\beta}' \mathbf{x}_j(t_k)\right]}
+\]
+
+These extensions provide flexibility to model complex survival patterns while retaining the semi-parametric advantages of the Cox framework.
+\end{frame}
+\section{Application to Health Informatics}
+\begin{frame}{Application: Predicting Hospital Readmission}
+Consider a study predicting 30-day hospital readmission using patient covariates:
+
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{4cm}@{}}
+\toprule
+\textbf{Covariate} & \textbf{Coefficient ($\hat{\beta}$)} & \textbf{Hazard Ratio (95\% CI)} \\
+\midrowcolor
+Age (per 10 years) & 0.12 & 1.13 (1.08, 1.18) \\
+Prior hospitalization (yes vs no) & 0.45 & 1.57 (1.32, 1.86) \\
+Comorbidity index & 0.28 & 1.32 (1.21, 1.44) \\
+Medication adherence & -0.35 & 0.70 (0.58, 0.85) \\
+Distance to hospital (km) & 0.05 & 1.05 (1.01, 1.10) \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+The fitted model:
+\[
+h(t) = h_0(t) \exp\left(0.12 \times \text{Age}_{10} + 0.45 \times \text{PriorHosp} + 0.28 \times \text{Charlson} - 0.35 \times \text{Adherence} + 0.05 \times \text{Distance}\right)
+\]
+
+For a 60-year-old patient with prior hospitalization (Charlson = 2, Adherence = 0.8, Distance = 10km):
+\[
+\text{Risk Score} = 0.12(6) + 0.45(1) + 0.28(2) - 0.35(0.8) + 0.05(10) = 1.39
+\]
+\[
+\text{Hazard Ratio} = \exp(1.39) = 4.01
+\]
+
+This patient has 4 times the hazard of readmission compared to the reference patient at any time during follow-up.
+\end{frame}
+\begin{frame}{LMIC Application: HIV Viral Load Suppression Time}
+Applying survival analysis to HIV treatment outcomes in Kenya:
+
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{4cm}@{}}
+\toprule
+\textbf{Covariate} & \textbf{Hazard Ratio} & \textbf{Interpretation} \\
+\midrowcolor
+Baseline CD4 count (<200 vs $\geq$200) & 1.45 & Higher hazard of viral failure \\
+WHO Stage III/IV vs Stage I/II & 1.62 & Advanced disease increases risk \\
+Distance to clinic (>10km vs $\leq$10km) & 1.28 & Access barriers increase risk \\
+Disclosure to partner (yes vs no) & 0.71 & Social support protective \\
+Adherence support (yes vs no) & 0.55 & Interventions reduce risk \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+The stratified Cox model accounts for clinic-level variation:
+\[
+h_s(t; \mathbf{x}) = h_{0s}(t) \exp\left(\beta_1 \text{CD4} + \beta_2 \text{Stage} + \beta_3 \text{Distance} + \beta_4 \text{Disclosure} + \beta_5 \text{Support}\right)
+\]
+
+Survival curves by adherence support status:
+\[
+S(t|\text{Support}=1) = \left[S_0(t)\right]^{\exp(\hat{\beta}_5)} = \left[S_0(t)\right]^{0.55}
+\]
+\[
+S(t|\text{Support}=0) = S_0(t)
+\]
+
+Patients with adherence support achieve viral suppression at approximately half the rate of those without support.
+\end{frame}
+\section{Summary}
+\begin{frame}{Key Takeaways}
+\begin{enumerate}
+1. The survival function $S(x) = P(T > x)$ and hazard function $h(x) = f(x)/S(x)$ are fundamental quantities in survival analysis, related by $S(x) = \exp\left(-\int_0^x h(u) du\right)$.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+2. Maximum likelihood estimation finds parameter values that maximize the probability of observing the sample data, with the log-likelihood transformation simplifying computations.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+3. For survival data with censoring, the likelihood contribution differs for observed events (density) versus censored observations (survival).
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+4. The Cox proportional hazards model provides semi-parametric estimation of covariate effects on survival without specifying the baseline hazard.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+5. Extensions including stratification and time-dependent covariates address violations of the proportional hazards assumption in complex clinical scenarios.
+\end{enumerate}
+
+\begin{center}
+\textbf{Questions for Further Discussion}
+\end{center}
+
+How should the proportional hazards assumption be tested in practice, and what alternative models are appropriate when it is violated? How can survival analysis methods be adapted for health systems with limited capacity for longitudinal follow-up?
+\end{frame}
+\end{document}

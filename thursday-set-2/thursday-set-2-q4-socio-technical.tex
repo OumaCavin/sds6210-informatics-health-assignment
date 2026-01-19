@@ -1,0 +1,309 @@
+\documentclass[9pt,xcolor=dvipsnames,aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,graphicx,tikz,pgfplots,booktabs,siunitx}
+\usetikzlibrary{arrows,shapes,decorations.pathmorphing,decorations.pathreplacing,decorations.snapping,fit,positioning,calc,intersections,shapes.geometric,backgrounds}
+\usetheme[numbering=fraction,titleformat=smallcaps,sectionpage=progressbar]{metropolis}
+\usepackage[style=authoryear]{biblatex}
+\addbibresource{references.bib}
+\setbeamertemplate{bibliography item}[text]
+\graphicspath{{../assets/}}
+\DeclareMathOperator{\e}{e}
+\title{\Large SDS6210: Informatics for Health\\[0.3em]\small Thursday Set 2, Q4: Socio-Technical Systems in Health IT}
+\author{\textbf{Cavin Otieno}}
+\institute{MSc Public Health Data Science\\Department of Health Informatics}
+\date{\today}
+\begin{document}
+\begin{frame}[noframenumbering,plain]
+    \maketitleslide
+\end{frame}
+\section{Definition and Theoretical Framework}
+\begin{frame}{Definition: Socio-Technical Systems Approach}
+The Socio-Technical Systems (STS) approach is a theoretical framework that recognizes information systems as consisting of two interdependent subsystems: the technical system (hardware, software, processes) and the social system (people, culture, organization, management). Originating from the Tavistock Institute's research on coal mining in the 1950s, STS emphasizes that optimal system performance requires joint optimization of both subsystems rather than maximizing one at the expense of the other.
+
+In healthcare informatics, the STS approach recognizes that:
+\begin{itemize}
+\item \textbf{Technology is embedded in social contexts}: Health IT systems operate within complex social structures of clinical workflows, professional hierarchies, and patient-provider relationships
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Social systems shape technology use**: How clinicians and administrators interact with technology is influenced by organizational culture, training, and incentive structures
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Unintended consequences emerge from interactions}: Problems often arise not from technical failures alone but from misalignment between technical capabilities and social realities
+\end{itemize}
+
+The STS framework provides vocabulary and conceptual tools for analyzing and improving health IT implementations that fail due to human, organizational, or workflow factors rather than purely technical issues.
+\end{frame}
+\begin{frame}{Theoretical Framework: Dimensions of Socio-Technical Systems}
+The STS framework identifies multiple dimensions that interact to determine system outcomes:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+\node[draw,circle,fill=blue!20,minimum width=1.8cm] (T) at (0,2) {Technical};
+\node[draw,circle,fill=green!20,minimum width=1.8cm] (O) at (3,2) {Organizational};
+\node[draw,circle,fill=red!20,minimum width=1.8cm] (P) at (3,0) {People};
+\node[draw,circle,fill=yellow!20,minimum width=1.8cm] (W) at (0,0) {Workflow};
+\node[draw,ellipse,fill=purple!10,minimum width=5cm,minimum height=3.5cm] (ST) at (1.5,1) {};
+\draw[<->,thick] (T) -- (O);
+\draw[<->,thick] (O) -- (P);
+\draw[<->,thick] (P) -- (W);
+\draw[<->,thick] (W) -- (T);
+\node at (1.5,1.8) {\textbf{Socio-Technical System}};
+\end{tikzpicture}
+\end{center}
+
+Core principles of STS applied to health IT:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Principle} & \textbf{Description} & \textbf{Health IT Application} \\
+\midrowcolor
+Joint Optimization & Design both social and technical systems together & Include clinicians in EHR design, redesign workflows for technology \\
+Minimum Critical Specification & Specify only what is essential, allow local adaptation & Allow facility-level customization within standards \\
+Compatibility & Design fits with existing values and practices & Align with clinical workflows, professional norms \\
+Multilevel Understanding & Consider system levels (individual, group, organizational) & Address individual learning, team coordination, org change \\
+\bottomrule
+\end{tabular}}
+\end{center}
+\end{frame}
+\section{Analysis Methods and Implementation}
+\begin{frame}{Methodology: Socio-Technical Analysis of Health IT}
+Analyzing health IT through an STS lens requires multiple methods and perspectives:
+
+\begin{center}
+\scalebox{0.7}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Analysis Dimension} & \textbf{Data Collection Methods} & \textbf{Key Questions} \\
+\midrowcolor
+Technical Assessment & System documentation, logs, performance metrics & Does the technology function as intended? \\
+Workflow Analysis & Time-motion studies, process mapping, shadowing & How does work actually get done? \\
+Organizational Analysis & Interviews, document review, culture assessment & What structures and norms shape behavior? \\
+User Experience & Surveys, usability testing, observation & What are user pain points and workarounds? \\
+Social Network Analysis & Communication patterns, collaboration mapping & Who influences technology adoption? \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+The work system framework developed by Systems Sciences provides a structured approach:
+\[
+\text{Work System} = \{\text{People}, \text{Processes}, \text{Information}, \text{Technologies}, \text{Infrastructure}, \text{Environment}\}
+\]
+Changes to any element ripple through the system, requiring consideration of unintended consequences and secondary effects.
+\end{frame}
+\begin{frame}{SEIPS: Work System Model for Healthcare Safety}
+The Systems Engineering Initiative for Patient Safety (SEIPS) model extends STS principles specifically for healthcare:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+\node[draw,rectangle,fill=blue!20,minimum width=2.2cm,minimum height=1.2cm] (P) at (0,1.5) {People};
+\node[draw,rectangle,fill=green!20,minimum width=2.2cm,minimum height=1.2cm] (O) at (3.5,1.5) {Organization};
+\node[draw,rectangle,fill=red!20,minimum width=2.2cm,minimum height=1.2cm] (T) at (7,1.5) {Tasks};
+\node[draw,rectangle,fill=yellow!20,minimum width=2.2cm,minimum height=1.2cm] (TOOL) at (3.5,-0.5) {Tools/\\Technology};
+\node[draw,rectangle,fill=purple!20,minimum width=2.2cm,minimum height=1.2cm] (E) at (0,-0.5) {Environment};
+\node[draw,ellipse,fill=orange!10,minimum width=10cm,minimum height=3.5cm] (I) at (3.5,0.5) {};
+\draw[<->,thick] (P) -- (O);
+\draw[<->,thick] (O) -- (T);
+\draw[<->,thick] (T) -- (TOOL);
+\draw[<->,thick] (TOOL) -- (E);
+\draw[<->,thick] (E) -- (P);
+\node[draw,rectangle,fill=gray!20,minimum width=8cm,minimum height=0.8cm] at (3.5,-2) {Processes $\rightarrow$ Outcomes (Patient, Worker, System)};
+\end{tikzpicture}
+\end{center}
+
+SEIPS analysis of EHR implementation considers:
+\begin{itemize}
+\item \textbf{People}: Clinician characteristics, training, cognitive workload
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Tasks**: Complexity, ambiguity, standardization of clinical activities
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Tools and Technology**: EHR usability, alert burden, integration with workflows
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Organization**: Leadership support, resources, policies, culture
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Environment**: Physical layout, interruptions, noise, lighting
+\end{itemize}
+
+Outcomes include patient safety, quality of care, clinician well-being, and system efficiency.
+\end{frame}
+\section{Application Examples}
+\begin{frame}{Case Study: EHR Implementation and Workarounds}
+A study of CPOE implementation at a US academic medical center illustrates STS dynamics:
+
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Issue} & \textbf{Technical Factor} & \textbf{Social/Work Practice Factor} \\
+\midrowcolor
+Alert Fatigue & High volume of drug interaction alerts (15+ per order) & Clinicians routinely dismiss alerts without review \\
+Order Set Gaps & Limited order sets for complex regimens & Physicians use free-text orders to bypass constraints \\
+Fragmented Documentation & Separated medication reconciliation from admission orders & Nurses create parallel paper tracking systems \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Workarounds identified included:
+\begin{itemize}
+\item \textbf{Pre-printed order sheets**: Used when electronic order sets did not match clinical scenarios
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Verbal orders bypassing system**: Nurses entered orders after verbal approval to avoid alert fatigue
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Parallel paper systems**: Maintained when electronic systems could not support certain workflows
+\end{itemize}
+
+These workarounds represent rational adaptations by users facing technology that does not fit their clinical realities, but they also represent patient safety risks and data quality issues that undermine system benefits.
+\end{frame}
+\begin{frame}{Case Study: Barcode Medication Administration Implementation}
+BCMA implementation in hospitals demonstrates STS dynamics in technology adoption:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+\node[draw,rectangle,fill=blue!20,minimum width=2.5cm,minimum height=1cm] (SUCCESS) at (0,1) {Successful\\Adoption};
+\node[draw,rectangle,fill=green!20,minimum width=2.5cm,minimum height=1cm] (PARTIAL) at (4,1) {Partial\\Adoption};
+\node[draw,rectangle,fill=red!20,minimum width=2.5cm,minimum height=1cm] (FAILURE) at (8,1) {Failed\\Adoption};
+\node[draw,ellipse,fill=purple!10,minimum width=11cm,minimum height=2.5cm] (I) at (4,0) {};
+\node at (4,2) {\textbf{BCMA Implementation Outcomes}};
+\node[draw,rectangle,fill=gray!20,minimum width=10cm,minimum height=0.6cm] at (4,-1.8) {Key factors: Leadership support, workflow redesign, training, ongoing optimization};
+\end{tikzpicture}
+\end{center}
+
+Success factors from high-performing sites:
+\begin{itemize}
+\item \textbf{Workflow redesign**: Redesigned nursing workflows around BCMA rather than retrofitting technology into existing workflows
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Leadership commitment**: Visible support from nursing and pharmacy leadership with dedicated implementation resources
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Staff involvement**: Nurses and pharmacists participated in design decisions and problem-solving
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Ongoing optimization**: Regular review of scan rates, error types, and workarounds with continuous improvement
+\end{itemize}
+
+Sites that failed to achieve adoption typically imposed technology without workflow consultation and lacked ongoing optimization processes.
+\end{frame}
+\section{LMIC Context: Sub-Saharan Africa}
+\begin{frame}{Socio-Technical Challenges in African Health IT}
+STS dynamics in African health systems differ from high-income settings:
+
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{STS Dimension} & \textbf{LMIC Challenge} & \textbf{Implication} \\
+\midrowcolor
+Technology & Limited devices, unreliable power, poor connectivity & Systems must function offline, tolerate interruptions \\
+People & Task-shifting to community health workers, varying literacy & Training must accommodate diverse skill levels \\
+Workflow & Vertical disease programs, paper-electronic hybrid workflows & Integration across programs requires coordination \\
+Organization & Multiple donors, fragmented governance, high staff turnover & Sustainable adoption requires institutional capacity \\
+Environment & Rural settings, community-based care, variable infrastructure & Systems must support community and facility contexts \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Research on DHIS2 implementation in Ghana found that successful adoption required:
+\begin{itemize}
+\item \textbf{Social**: Training champions at district level, peer learning networks, supervisor accountability
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Technical**: Offline functionality, mobile access, simple user interfaces
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Organizational**: Clear reporting requirements, data quality feedback loops, performance monitoring
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Environmental**: Reliable power sources (solar), mobile network coverage, physical data entry spaces
+\end{itemize}
+\end{frame}
+\begin{frame}{Case Study: Community Health Worker Mobile Health in Kenya}
+The UNICEF-supported mHealth program for community health workers in Kenya illustrates STS considerations:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+\node[draw,rectangle,fill=blue!20,minimum width=2.2cm,minimum height=1.2cm] (CHW) at (0,1) {Community\\Health Worker};
+\node[draw,rectangle,fill=green!20,minimum width=2.5cm,minimum height=1.2cm] (APP) at (3.5,1) {Mobile\\Application};
+\node[draw,rectangle,fill=red!20,minimum width=2.2cm,minimum height=1.2cm] (SUP) at (7,1) {Supervision\\System};
+\node[draw,rectangle,fill=yellow!20,minimum width=2.5cm,minimum height=1.2cm] (HC) at (3.5,-1) {Health\\Facility};
+\node[draw,ellipse,fill=purple!10,minimum width=10cm,minimum height=3cm] (I) at (3.5,0) {};
+\draw[<->,thick] (CHW) -- (APP);
+\draw[<->,thick] (APP) -- (SUP);
+\draw[<->,thick] (APP) -- (HC);
+\draw[<->,thick] (CHW) -- (HC);
+\node[draw,rectangle,fill=gray!20,minimum width=10cm,minimum height=0.6cm] at (3.5,-2.2) {Key success factors: User-centered design, supervisor engagement, integration with facility workflows};
+\end{tikzpicture}
+\end{center}
+
+STS analysis revealed:
+\begin{itemize}
+\item \textbf{Technical**: Simple Java-based app running on low-cost phones, offline data capture, SMS synchronization
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Social**: Training in local languages, peer support networks among CHWs, supervisor accountability
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Workflow**: Integration with facility referral workflows, synchronized with monthly reporting cycles
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Organizational**: Embedded in existing CHW supervision structure, linked to performance-based incentives
+\end{itemize}
+
+The program achieved >80% adoption rates, significantly higher than similar programs that neglected STS considerations.
+\end{frame}
+\section{Summary}
+\begin{frame}{Key Takeaways}
+\begin{enumerate}
+1. Socio-Technical Systems theory recognizes that health IT implementations involve interdependent technical and social subsystems that must be jointly optimized.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+2. The SEIPS model provides a structured framework for analyzing healthcare work systems including people, tasks, tools, organization, and environment.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+3. Workarounds and implementation failures often result from misalignment between technology and social realities rather than purely technical deficiencies.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+4. Successful health IT implementation requires attention to workflow redesign, staff involvement, leadership commitment, and ongoing optimization.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+5. In African health systems, STS considerations include limited infrastructure, task-shifting to lower-cadre workers, fragmented governance, and community-based care delivery.
+\end{enumerate}
+
+\begin{center}
+\textbf{Questions for Further Discussion}
+\end{center}
+
+How can health IT implementations in resource-constrained settings balance the need for standardized, interoperable systems with the flexibility required for local adaptation? What role should community health workers and other frontline staff play in the design and implementation of health IT systems?
+\end{frame}
+\end{document}

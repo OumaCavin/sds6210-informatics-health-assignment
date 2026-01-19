@@ -1,0 +1,210 @@
+\documentclass[9pt,xcolor=dvipsnames,aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,graphicx,tikz,pgfplots,booktabs,siunitx}
+\usetikzlibrary{arrows,shapes,decorations.pathmorphing,decorations.pathreplacing,decorations.snapping,fit,positioning,calc,intersections,shapes.geometric,backgrounds}
+\usetheme[numbering=fraction,titleformat=smallcaps,sectionpage=progressbar]{metropolis}
+\usepackage[style=authoryear]{biblatex}
+\addbibresource{references.bib}
+\setbeamertemplate{bibliography item}[text]
+\graphicspath{{../assets/}}
+\DeclareMathOperator{\e}{e}
+\title{\Large SDS6210: Informatics for Health\\[0.3em]\small Tuesday Set 2, Q1: ROC Curves and Clinical Decision Support}
+\author{\textbf{Cavin Otieno}}
+\institute{MSc Public Health Data Science\\Department of Health Informatics}
+\date{\today}
+\begin{document}
+\begin{frame}[noframenumbering,plain]
+    \maketitleslide
+\end{frame}
+\section{Definition and Theoretical Framework}
+\begin{frame}{Definition: Receiver Operating Characteristic (ROC) Curves}
+An ROC curve is a graphical representation that illustrates the diagnostic ability of a binary classifier system across different threshold settings. The curve is created by plotting the True Positive Rate (TPR) against the False Positive Rate (FPR) at various threshold values.
+
+Mathematically, for a classifier with predicted probability $P(Y=1|X)$, and threshold $t$:
+\begin{align}
+\text{TPR}(t) &= \text{Sensitivity} = P(\hat{Y}=1|Y=1) = \frac{\text{TP}(t)}{\text{TP}(t) + \text{FN}(t)} \\
+\text{FPR}(t) &= 1 - \text{Specificity} = P(\hat{Y}=1|Y=0) = \frac{\text{FP}(t)}{\text{FP}(t) + \text{TN}(t)}
+\end{align}
+
+The Area Under the ROC Curve (AUC) provides an aggregate measure of performance across all possible classification thresholds, ranging from 0.5 (random guessing) to 1.0 (perfect classification). An AUC of 0.85 indicates strong discriminative ability, meaning the classifier can distinguish between positive and negative cases with 85\% probability.
+\end{frame}
+\begin{frame}{Theoretical Framework: Signal Detection Theory}
+ROC curves originate from Signal Detection Theory (SDT), originally developed for radar detection during World War II. The theory addresses the fundamental problem of distinguishing a true signal from background noise in the presence of uncertainty.
+
+The SDT framework conceptualizes decision-making as involving two components: sensitivity ($d'$) and response bias ($\beta$). Sensitivity reflects the actual ability to discriminate between signal and noise, while response bias reflects the tendency to respond "yes" regardless of the actual stimulus.
+
+In medical diagnostics, the signal represents the presence of disease, and noise represents the variability in measurement due to biological variation, technical error, or other sources of variation. The ROC curve thus represents the tradeoff between the benefits of detecting true disease (true positives) and the costs of false alarms (false positives) across different decision thresholds.
+
+The slope of the ROC curve at any point equals the likelihood ratio for a positive test at that threshold: $\text{Slope} = \frac{P(\text{Test}+|\text{Disease}+)}{P(\text{Test}+|\text{Disease}-)} = \text{LR}+$
+\end{frame}
+\section{Methods and Calculation}
+\begin{frame}{Methodology: Constructing ROC Curves}
+The construction of an ROC curve requires the following systematic approach:
+
+\begin{enumerate}
+\item \textbf{Obtain continuous predictions}: Generate probability scores or continuous measurements from the diagnostic test for all subjects in the validation dataset.
+\item \textbf{Rank observations}: Sort all subjects by their predicted probability scores in descending order.
+\item \textbf{Calculate cumulative TPR and FPR}: For each unique threshold value, calculate the cumulative counts of true positives and false positives.
+\item \textbf{Plot the curve}: Plot FPR on the x-axis and TPR on the y-axis, connecting the points to form the ROC curve.
+\item \textbf{Calculate AUC}: Compute the area under the curve using numerical integration methods such as the trapezoidal rule.
+\end{enumerate}
+
+The trapezoidal rule for AUC calculation:
+\[
+\text{AUC} = \sum_{i=1}^{n-1} \frac{(\text{FPR}_{i+1} - \text{FPR}_i) \times (\text{TPR}_{i+1} + \text{TPR}_i)}{2}
+\]
+
+Alternatively, the AUC can be interpreted as the probability that a randomly chosen positive instance is ranked higher than a randomly chosen negative instance:
+\[
+\text{AUC} = P(X_{+} > X_{-})
+\]
+where $X_{+}$ and $X_{-}$ represent the classifier scores for positive and negative cases, respectively.
+\end{frame}
+\begin{frame}{Decision Threshold Optimization}
+Selecting the optimal threshold on the ROC curve requires balancing the relative costs and benefits of different classification errors. Several methods exist for threshold selection:
+
+\begin{itemize}
+\item \textbf{Youden's J Statistic}: Maximizes the distance from the random diagonal line:
+\[
+J = \max_{t} \{\text{Sensitivity}(t) + \text{Specificity}(t) - 1\}
+\]
+The optimal threshold corresponds to the point where $J$ is maximized.
+
+\item \textbf{Cost-Sensitive Analysis}: Incorporates the relative costs of false positives ($C_{FP}$) and false negatives ($C_{FN}$):
+\[
+\text{Optimal Threshold} = \frac{C_{FN} \times (1 - \text{Prevalence})}{C_{FN} \times (1 - \text{Prevalence}) + C_{FP} \times \text{Prevalence}}
+\]
+
+\item \textbf{Clinical Utility Point}: Prioritizes clinical scenarios where missing a diagnosis (false negative) is more costly than a false alarm, such as in cancer screening programs.
+\end{itemize}
+
+In low-resource settings, threshold selection must also consider the availability of confirmatory testing, the prevalence of disease in the population, and the opportunity costs of diagnostic resources.
+\end{frame}
+\section{Application Examples}
+\begin{frame}{Example: Malaria Rapid Diagnostic Test Validation}
+Consider the validation of a malaria Rapid Diagnostic Test (RDT) in a rural health facility in Kenya. The test provides quantitative readings of parasite density. A sample of 500 patients was tested with both the RDT and PCR (gold standard):
+
+\begin{table}[ht]
+\centering
+\scalebox{0.75}{
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Threshold (parasites/$\mu$L)} & \textbf{TP} & \textbf{FP} & \textbf{TN} & \textbf{FN} \\
+\midrule
+50 & 245 & 120 & 105 & 30 \\
+100 & 230 & 80 & 145 & 45 \\
+200 & 210 & 50 & 175 & 65 \\
+500 & 180 & 25 & 200 & 95 \\
+1000 & 150 & 10 & 215 & 125 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+Calculate TPR and FPR for each threshold, plot the ROC curve, and determine the AUC. If the local prevalence of malaria is 40\%, and the cost of missing a malaria case is 5 times higher than the cost of unnecessary treatment, what threshold would you recommend?
+\end{frame}
+\begin{frame}{Example Solution: ROC Analysis}
+Using the data from the previous slide:
+
+\begin{align*}
+\text{Threshold 50:} & \quad \text{TPR} = \frac{245}{275} = 0.891, \quad \text{FPR} = \frac{120}{225} = 0.533 \\
+\text{Threshold 100:} & \quad \text{TPR} = \frac{230}{275} = 0.836, \quad \text{FPR} = \frac{80}{225} = 0.356 \\
+\text{Threshold 200:} & \quad \text{TPR} = \frac{210}{275} = 0.764, \quad \text{FPR} = \frac{50}{225} = 0.222 \\
+\text{Threshold 500:} & \quad \text{TPR} = \frac{180}{275} = 0.655, \quad \text{FPR} = \frac{25}{225} = 0.111 \\
+\text{Threshold 1000:} & \quad \text{TPR} = \frac{150}{275} = 0.545, \quad \text{FPR} = \frac{10}{225} = 0.044
+\end{align*}
+
+For cost-sensitive threshold selection:
+\[
+t^* = \frac{5 \times (1 - 0.40)}{5 \times (1 - 0.40) + 1 \times 0.40} = \frac{3.0}{3.4} = 0.88
+\]
+
+The optimal threshold corresponds to a point where the combined sensitivity and specificity is maximized given the cost ratio. In this case, the threshold of 100 parasites/$\mu$L provides a good balance with sensitivity of 83.6\% and specificity of 64.4\%.
+
+The AUC can be calculated using the trapezoidal rule:
+\[
+\text{AUC} \approx 0.5 \times (0.891 - 0.5) + 0.5 \times (0.836 - 0.356) + \ldots \approx 0.82
+\]
+This indicates good diagnostic accuracy for the malaria RDT.
+\end{frame}
+\section{LMIC Context: Sub-Saharan Africa}
+\begin{frame}{ROC Curves in Resource-Limited Settings}
+In Sub-Saharan Africa, ROC curve analysis plays a critical role in the validation and deployment of point-of-care diagnostics. The unique challenges of LMIC healthcare systems influence how ROC analysis is applied and interpreted.
+
+\begin{itemize}
+\item \textbf{Laboratory Infrastructure}: Many health facilities lack the capacity for gold-standard PCR testing, making ROC validation against alternative reference standards necessary. This introduces spectrum bias where test performance may differ from high-resource validation studies.
+\item \textbf{Prevalence Variation}: Disease prevalence varies significantly across geographic regions and seasons in Africa. ROC curves are threshold-independent but the optimal clinical threshold depends on prevalence, which must be considered when implementing diagnostic algorithms.
+\item \textbf{Cost Considerations}: The tradeoffs between sensitivity and specificity have direct resource implications. A false positive uses up treatment resources that could serve other patients, while a false negative may lead to disease transmission and more expensive complications.
+\end{itemize}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.9]
+\begin{axis}[
+    axis lines=middle,
+    xlabel={False Positive Rate (1 - Specificity)},
+    ylabel={True Positive Rate (Sensitivity)},
+    xmin=0, xmax=1,
+    ymin=0, ymax=1,
+    legend pos=south east,
+    width=0.7\textwidth,
+    height=0.5\textwidth
+]
+\addplot[blue,thick] coordinates {(0,0) (0.044,0.545) (0.111,0.655) (0.222,0.764) (0.356,0.836) (0.533,0.891) (1,1)};
+\addlegendentry{Malaria RDT (AUC = 0.82)}
+\addplot[red,dashed,thick] coordinates {(0,0) (1,1)};
+\addlegendentry{Random Classifier (AUC = 0.5)}
+\end{axis}
+\end{tikzpicture}
+\end{figure}
+\end{frame}
+\begin{frame}{Case Study: HIV Viral Load Testing in Kenya}
+The Kenyan Ministry of Health implemented dried blood spot (DBS) testing for HIV viral load monitoring in rural health facilities. ROC analysis was used to validate DBS against plasma-based testing:
+
+\begin{itemize}
+\item Study Design: 1,200 patients across 15 rural health facilities
+\item Reference Standard: Plasma viral load by Roche Cobas TaqMan
+\item DBS Cutoff: 1,000 copies/mL (WHO recommended threshold for virological failure)
+\end{itemize}
+
+Results showed an AUC of 0.89 with sensitivity of 91\% and specificity of 78\% at the 1,000 copies/mL threshold. However, further analysis revealed:
+\begin{itemize}
+\item Performance degradation at altitudes above 2,000m (affects DBS drying)
+\item Inter-operator variability in sample collection
+\item Need for local threshold adjustment to 800 copies/mL for optimal performance
+\end{itemize}
+
+This example demonstrates that ROC curves developed in high-resource settings may not transfer directly to LMIC contexts without local validation. The WHO now recommends AUC verification as part of diagnostic prequalification for LMIC deployment.
+\end{frame}
+\section{Summary}
+\begin{frame}{Key Takeaways}
+\begin{enumerate}
+\item ROC curves provide a comprehensive visualization of classifier performance across all possible decision thresholds, independent of disease prevalence.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+\item The AUC provides an aggregate measure of diagnostic accuracy, with values above 0.7 indicating acceptable and above 0.8 indicating excellent discrimination.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+\item Threshold selection should incorporate clinical context, disease prevalence, and the relative costs of false positive versus false negative errors.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+\item In LMICs, ROC validation must account for local laboratory capacity, operator training, environmental factors, and prevalent co-infections that may affect test performance.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+\item Continuous diagnostics (as opposed to binary thresholds) provide more information for clinical decision-making and allow for risk-stratified care pathways.
+\end{enumerate}
+
+\begin{center}
+\textbf{Questions for Further Discussion}
+\end{center}
+
+How would you design a validation study for a new point-of-care test in a rural Ugandan health facility with limited laboratory infrastructure? What reference standard would you use, and how would you address potential spectrum bias?
+\end{frame}
+\end{document}

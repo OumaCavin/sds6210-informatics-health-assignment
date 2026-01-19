@@ -1,0 +1,336 @@
+\documentclass[9pt,xcolor=dvipsnames,aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,graphicx,tikz,pgfplots,booktabs,siunitx}
+\usetikzlibrary{arrows,shapes,decorations.pathmorphing,decorations.pathreplacing,decorations.snapping,fit,positioning,calc,intersections,shapes.geometric,backgrounds}
+\usetheme[numbering=fraction,titleformat=smallcaps,sectionpage=progressbar]{metropolis}
+\usepackage[style=authoryear]{biblatex}
+\addbibresource{references.bib}
+\setbeamertemplate{bibliography item}[text]
+\graphicspath{{../assets/}}
+\DeclareMathOperator{\e}{e}
+\title{\Large SDS6210: Informatics for Health\\[0.3em]\small Thursday Set 2, Q3: Legacy System Integration in Health IT}
+\author{\textbf{Cavin Otieno}}
+\institute{MSc Public Health Data Science\\Department of Health Informatics}
+\date{\today}
+\begin{document}
+\begin{frame}[noframenumbering,plain]
+    \maketitleslide
+\end{frame}
+\section{Definition and Theoretical Framework}
+\begin{frame}{Definition: Legacy Health Information Systems}
+A legacy health information system is any healthcare IT system that has been in operation for an extended period, often predating modern software development practices and standards. These systems typically include early-generation electronic health record systems, departmental systems (laboratory, radiology, pharmacy), billing and scheduling systems, and health management information systems that were implemented before current interoperability standards were established.
+
+Legacy systems persist in healthcare organizations for multiple reasons:
+\begin{itemize}
+\item \textbf{Sunk Costs}: Significant investments in software licenses, customization, training, and data migration make replacement expensive
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Data Encapsulation**: Critical clinical and financial data resides in legacy databases with complex schemas and undocumented structures
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Process Integration**: Business processes have evolved around legacy system capabilities and limitations
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Regulatory Compliance**: Legacy systems may be certified or validated for specific regulatory purposes (e.g., FDA 21 CFR Part 11)
+\end{itemize}
+
+The challenge of legacy integration is not merely technical but encompasses organizational, financial, and regulatory dimensions that must be addressed holistically.
+\end{frame}
+\begin{frame}{Theoretical Framework: System Integration Patterns}
+Integration architecture for legacy systems follows established patterns developed in enterprise application integration:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+\node[draw,rectangle,fill=blue!20,minimum width=2.5cm,minimum height=1.2cm] (L) at (0,1.5) {Legacy\\System};
+\node[draw,rectangle,fill=green!20,minimum width=2.5cm,minimum height=1.2cm] (E) at (5,1.5) {Enterprise\\Applications};
+\node[draw,rectangle,fill=red!20,minimum width=2.5cm,minimum height=1.2cm] (I) at (5,-1) {Integration\\Layer};
+\node[draw,rectangle,fill=yellow!20,minimum width=2.5cm,minimum height=1.2cm] (M) at (0,-1) {Modern\\System};
+\draw[->,thick] (L) -- (I) node[midway,right] {Adapter};
+\draw[->,thick] (M) -- (I) node[midway,left] {API};
+\draw[->,thick] (I) -- (E) node[midway,right] {Orchestration};
+\node[draw,ellipse,fill=gray!10,minimum width=12cm,minimum height=4cm] (IL) at (2.5,0.2) {};
+\node at (2.5,2.2) {\textbf{Integration Patterns}};
+\end{tikzpicture}
+\end{center}
+
+Common integration patterns include:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Pattern} & \textbf{Description} & \textbf{Health IT Application} \\
+\midrowcolor
+Point-to-Point & Direct connection between systems & Legacy lab-HIS interfaces \\
+Hub-and-Spoke & Central integration hub connects systems & Enterprise service bus architectures \\
+Event-Driven & Systems communicate via events & Real-time clinical notifications \\
+API Gateway & Unified API layer for system access & FHIR server integration \\
+Data Federation & Virtual unified view of distributed data & Clinical data repositories \\
+\bottomrule
+\end{tabular}}
+\end{center}
+\end{frame}
+\section{Methods and Implementation Strategies}
+\begin{frame}{Methodology: Legacy System Assessment and Integration Planning}
+Successful legacy integration requires systematic assessment and planning:
+
+\begin{center}
+\scalebox{0.7}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Assessment Area} & \textbf{Evaluation Criteria} & \textbf{Output} \\
+\midrowcolor
+Technical Assessment & Database structure, API availability, data formats, performance limits & Technical integration options \\
+Data Quality Assessment & Completeness, accuracy, consistency of legacy data & Data cleansing requirements \\
+Business Process Analysis & Workflows, business rules, exception handling & Process standardization needs \\
+Vendor Assessment & Product roadmap, support status, pricing, partnership model & Vendor strategy (retain/replace) \\
+Regulatory Assessment & Compliance requirements, audit trails, data retention & Governance requirements \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+The decision between "replace" and "integrate" strategies involves multiple factors:
+\begin{itemize}
+\item \textbf{Replace}: High costs but eliminates technical debt; appropriate when legacy systems are end-of-life with no vendor support
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Integrate**: Lower immediate costs but ongoing maintenance burden; appropriate when legacy systems function adequately and data migration is high-risk
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Hybrid**: Retain legacy for specific functions while introducing modern systems for new capabilities; most common real-world approach
+\end{itemize}
+\end{frame}
+\begin{frame}{Integration Technologies and Standards}
+Modern health IT provides multiple technologies for legacy integration:
+
+\begin{center}
+\scalebox{0.7}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Technology} & \textbf{Description} & \textbf{Health Application} \\
+\midrowcolor
+HL7 v2.x & Message-based integration standard & Legacy lab, radiology, ADT interfaces \\
+FHIR REST API & Modern web-based integration & New systems, mobile apps, external integrations \\
+IHE Profiles & Integration profiles for specific use cases & XDS for document exchange, XCA for cross-community \\
+Enterprise Service Bus & Centralized integration platform & Hub-and-spoke integration architectures \\
+Enterprise Application Integration & Data transformation and routing & Batch and real-time data synchronization \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+For legacy systems without modern APIs, integration approaches include:
+\begin{itemize}
+\item \textbf{Database Integration**: Direct database connections for read/write operations (requires careful data integrity management)
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{File-Based Integration**: CSV, HL7 v2 file transfers with scheduled processing
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Screen Scraping**: Extracting data from terminal-based legacy applications (last resort due to fragility)
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Middleware/Integration Engine**: Specialized healthcare integration platforms (Mirth Connect, Rhapsody, Ensemble) that provide protocol conversion and message transformation
+\end{itemize}
+\end{frame}
+\section{Application Examples}
+\begin{frame}{Example: Integrating Legacy Laboratory Information System}
+Consider integrating a legacy Laboratory Information System (LIS) with a new EHR:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+\node[draw,rectangle,fill=blue!20,minimum width=2.2cm,minimum height=1.2cm] (EHR) at (0,1.5) {New EHR\\System};
+\node[draw,rectangle,fill=green!20,minimum width=2.2cm,minimum height=1.2cm] (IE) at (4,1.5) {Integration\\Engine};
+\node[draw,rectangle,fill=red!20,minimum width=2.2cm,minimum height=1.2cm] (LIS) at (8,1.5) {Legacy\\LIS};
+\node[draw,rectangle,fill=yellow!20,minimum width=2.2cm,minimum height=1cm] (ORD) at (0,-0.5) {Order\\Message};
+\node[draw,rectangle,fill=purple!20,minimum width=2.2cm,minimum height=1cm] (RES) at (8,-0.5) {Result\\Message};
+\node[draw,ellipse,fill=gray!10,minimum width=10cm,minimum height=3cm] (I) at (4,0.5) {};
+\draw[->,thick,dashed] (EHR) -- (ORD);
+\draw[->,thick] (ORD) -- (IE) node[midway,below] {ORM^O01};
+\draw[->,thick] (IE) -- (LIS) node[midway,below] {ORM^O01};
+\draw[->,thick] (LIS) -- (RES) node[midway,below] {ORU^R01};
+\draw[->,thick] (RES) -- (IE);
+\draw[->,thick] (IE) -- (EHR);
+\end{tikzpicture}
+\end{center}
+
+Integration sequence:
+\begin{enumerate}
+1. Provider places order in EHR
+2. EHR sends HL7 v2 ORM (Order Message) to integration engine
+3. Integration engine transforms message to legacy LIS format
+4. LIS processes order and returns results via ORU (Result Message)
+5. Integration engine transforms results back to FHIR Observation resources
+6. EHR displays results and triggers any applicable alerts
+\end{enumerate}
+
+Key considerations include:
+\begin{itemize}
+\item Mapping between EHR patient identifiers and LIS internal identifiers
+\end{itemize}
+
+\begin{itemize}
+\item Handling of test codes between different coding systems (LOINC vs. local codes)
+\end{itemize}
+
+\begin{itemize}
+\item Managing orders that cannot be fulfilled by legacy LIS (test menu gaps)
+\end{itemize}
+\end{frame}
+\begin{frame}{Example: Historical Data Migration Strategy}
+When replacing legacy systems, historical data migration requires careful planning:
+
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Data Category} & \textbf{Migration Approach} & \textbf{Considerations} \\
+\midrowcolor
+Active Patients & Full migration to new system & Verify accuracy, maintain identifiers \\
+Inactive Patients & Summary migration & Aggregate data, reduced detail \\
+Clinical Documents & Document imaging with indexing & Full-text search, retention requirements \\
+Financial Data & Archive according to regulations & Audit requirements, access for inquiries \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Data migration phases:
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+\node[draw,rectangle,fill=blue!20,minimum width=2.5cm,minimum height=1cm] (E) at (0,1) {Extract};
+\node[draw,rectangle,fill=green!20,minimum width=2.5cm,minimum height=1cm] (T) at (3.5,1) {Transform};
+\node[draw,rectangle,fill=red!20,minimum width=2.5cm,minimum height=1cm] (V) at (7,1) {Validate};
+\node[draw,rectangle,fill=yellow!20,minimum width=2.5cm,minimum height=1cm] (L) at (3.5,-1) {Load};
+\node[draw,ellipse,fill=purple!10,minimum width=10cm,minimum height=2.5cm] (I) at (3.5,0) {};
+\draw[->,thick] (E) -- (T) node[midway,above] {Extract};
+\draw[->,thick] (T) -- (V);
+\draw[->,thick] (V) -- (L) node[midway,right] {Validate};
+\draw[->,thick] (L) -- (2,0) -- (E) node[midway,below] {Feedback loop};
+\node[draw,rectangle,fill=gray!20,minimum width=10cm,minimum height=0.6cm] at (3.5,-2) {ETL process requires iterative refinement based on validation results};
+\end{tikzpicture}
+\end{center}
+
+Common data migration challenges include:
+\begin{itemize}
+\item Data quality issues in source systems requiring cleansing before migration
+\end{itemize}
+
+\begin{itemize}
+\item Missing or inconsistent patient identifiers complicating record matching
+\end{itemize}
+
+\begin{itemize}
+\item Terminology mapping between legacy local codes and standard vocabularies
+\end{itemize}
+
+\begin{itemize}
+\item Performance impacts during large-volume data loads
+\end{itemize}
+\end{frame}
+\section{LMIC Context: Sub-Saharan Africa}
+\begin{frame}{Legacy Integration Challenges in African Health Systems}
+African health systems face unique legacy integration challenges:
+
+\begin{center}
+\scalebox{0.7}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Challenge} & \textbf{Description} & \textbf{Mitigation Approach} \\
+\midrowcolor
+Vertical Program Silos & Disease-specific systems (HIV, TB, malaria) with limited integration & OpenHIE architecture, shared health information layer \\
+Paper-Based Legacy & Historical data in paper records, not electronic systems & Digitization prioritization, selective historical migration \\
+Donor-Funded Systems & Systems implemented by different donors with incompatible designs & National health information architecture, governance \\
+Infrastructure Limitations & Legacy server-based systems in facilities without reliable power/connectivity & Cloud-based integration, mobile-first approaches \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+The OpenHIE (Open Health Information Exchange) community has developed reference architectures specifically addressing LMIC integration challenges:
+\begin{itemize}
+\item \textbf{Health Information Mediator (HIM)}: Central integration layer that normalizes terminology and protocols
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Shared Health Record (SHR)}: Aggregate view of patient information from multiple source systems
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Terminology Service**: Terminology mapping and management for interoperability
+\end{itemize}
+
+Kenya's implementation of OpenHIE principles in the Kenya Health Information Exchange (KHIE) demonstrates how these approaches work in practice, connecting over 200 health facilities through standardized integration.
+\end{frame}
+\begin{frame}{Case Study: Integrating Vertical Programs in Tanzania}
+Tanzania's journey toward integrated health information illustrates legacy integration challenges and solutions:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+\node[draw,rectangle,fill=blue!20,minimum width=1.8cm,minimum height=1cm] (HIV) at (0,1) {CTC2};
+\node[draw,rectangle,fill=green!20,minimum width=1.8cm,minimum height=1cm] (TB) at (2.5,1) {MTB/DR};
+\node[draw,rectangle,fill=red!20,minimum width=1.8cm,minimum height=1cm] (MAL) at (5,1) {DHIS2};
+\node[draw,rectangle,fill=yellow!20,minimum width=1.8cm,minimum height=1cm] (EHR) at (7.5,1) {OpenMRS};
+\node[draw,rectangle,fill=purple!20,minimum width=2cm,minimum height=1.2cm] (HIM) at (4,-0.5) {Health Information\\Mediator};
+\node[draw,ellipse,fill=gray!10,minimum width=10cm,minimum height=3cm] (I) at (4,0.3) {};
+\draw[->,thick] (HIV) -- (HIM);
+\draw[->,thick] (TB) -- (HIM);
+\draw[->,thick] (MAL) -- (HIM);
+\draw[->,thick] (EHR) -- (HIM);
+\end{tikzpicture}
+\end{center}
+
+Key lessons from Tanzania's experience:
+\begin{itemize}
+\item Political commitment at the Ministry of Health was essential for coordinating donor-funded system integration
+\end{itemize}
+
+\begin{itemize}
+\item Standardized patient identifiers (using national ID or facility-assigned IDs) were foundational to integration
+\end{itemize}
+
+\begin{itemize}
+\item Incremental integration starting with the highest-priority data flows (HIV treatment outcomes) built momentum for broader integration
+\end{itemize}
+
+\begin{itemize}
+\item Ongoing governance structures including the Health Information Steering Committee ensured sustained coordination
+\end{itemize}
+\end{frame}
+\section{Summary}
+\begin{frame}{Key Takeaways}
+\begin{enumerate}
+1. Legacy health information systems persist due to sunk costs, data encapsulation, process integration, and regulatory compliance requirements.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+2. Integration patterns including point-to-point, hub-and-spoke, and API-based approaches provide architectural frameworks for connecting legacy and modern systems.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+3. The decision between replacing and integrating legacy systems requires careful assessment of technical, business, and regulatory factors.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+4. Integration engines, middleware, and modern standards like FHIR provide technical capabilities for bridging legacy and contemporary systems.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+5. African health systems face unique challenges including vertical program silos, paper-based legacy, and donor-funded systems that require adapted integration approaches like OpenHIE.
+\end{enumerate}
+
+\begin{center}
+\textbf{Questions for Further Discussion}
+\end{center}
+
+How should African nations balance the desire for modern, interoperable health information systems with the reality of fragmented legacy systems funded by multiple donors? What governance mechanisms can ensure that integration efforts are coordinated and sustainable?
+\end{frame}
+\end{document}

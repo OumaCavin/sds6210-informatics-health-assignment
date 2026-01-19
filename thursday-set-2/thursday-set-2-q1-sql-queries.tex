@@ -1,0 +1,382 @@
+\documentclass[9pt,xcolor=dvipsnames,aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,graphicx,tikz,pgfplots,booktabs,siunitx}
+\usetikzlibrary{arrows,shapes,decorations.pathmorphing,decorations.pathreplacing,decorations.snapping,fit,positioning,calc,intersections,shapes.geometric,backgrounds}
+\usetheme[numbering=fraction,titleformat=smallcaps,sectionpage=progressbar]{metropolis}
+\usepackage[style=authoryear]{biblatex}
+\addbibresource{references.bib}
+\setbeamertemplate{bibliography item}[text]
+\graphicspath{{../assets/}}
+\DeclareMathOperator{\e}{e}
+\title{\Large SDS6210: Informatics for Health\\[0.3em]\small Thursday Set 2, Q1: SQL Queries for Clinical Data Analysis}
+\author{\textbf{Cavin Otieno}}
+\institute{MSc Public Health Data Science\\Department of Health Informatics}
+\date{\today}
+\begin{document}
+\begin{frame}[noframenumbering,plain]
+    \maketitleslide
+\end{frame}
+\section{Definition and Theoretical Framework}
+\begin{frame}{Definition: Structured Query Language in Healthcare}
+Structured Query Language (SQL) is a standardized programming language used for managing and querying relational databases. In healthcare informatics, SQL serves as the fundamental tool for extracting, manipulating, and analyzing clinical data stored in electronic health record systems, health information exchanges, and research data warehouses.
+
+SQL operations are organized into several categories that address different aspects of data management:
+\begin{itemize}
+\item \textbf{Data Definition Language (DDL)}: CREATE, ALTER, DROP for database structure
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Data Manipulation Language (DML)}: SELECT, INSERT, UPDATE, DELETE for data operations
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Data Control Language (DCL)}: GRANT, REVOKE for access control
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Transaction Control}: COMMIT, ROLLBACK for atomic operations
+\end{itemize}
+
+For clinical data analysis, the SELECT statement and its associated clauses (WHERE, GROUP BY, HAVING, JOIN, ORDER BY) provide the analytical capabilities essential for quality improvement, clinical research, and operational reporting.
+\end{frame}
+\begin{frame}{Theoretical Framework: Relational Data Models in Healthcare}
+Healthcare data follows relational structures that reflect the clinical and administrative domains:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+\node[draw,rectangle,fill=blue!20,minimum width=2.5cm,minimum height=1.2cm] (P) at (0,1.5) {Patient\\(\underline{patient\_id})};
+\node[draw,rectangle,fill=green!20,minimum width=2.5cm,minimum height=1.2cm] (E) at (4,1.5) {Encounter\\(\underline{encounter\_id}, patient\_id)};
+\node[draw,rectangle,fill=red!20,minimum width=2.5cm,minimum height=1.2cm] (D) at (8,1.5) {Diagnosis\\(\underline{dx\_id}, encounter\_id)};
+\node[draw,rectangle,fill=yellow!20,minimum width=2.5cm,minimum height=1.2cm] (M) at (4,-0.5) {Medication\\(\underline{med\_id}, encounter\_id)};
+\node[draw,rectangle,fill=purple!20,minimum width=2.5cm,minimum height=1.2cm] (L) at (8,-0.5) {Lab Result\\(\underline{lab\_id}, encounter\_id)};
+\draw[->,thick] (E) -- (P) node[midway,above] {FK: patient\_id};
+\draw[->,thick] (D) -- (E) node[midway,above] {FK: encounter\_id};
+\draw[->,thick] (M) -- (E) node[midway,right] {FK: encounter\_id};
+\draw[->,thick] (L) -- (E) node[midway,right] {FK: encounter\_id};
+\node[draw,rectangle,fill=gray!20,minimum width=11cm,minimum height=0.6cm] at (4,-1.8) {Primary keys are underlined; foreign keys (FK) establish table relationships};
+\end{tikzpicture}
+\end{center}
+
+The relational model enables:
+\begin{itemize}
+\item Data normalization to reduce redundancy and maintain consistency
+\end{itemize}
+
+\begin{itemize}
+\item Referential integrity through foreign key constraints
+\end{itemize}
+
+\begin{itemize}
+\item Flexible querying through JOIN operations across related tables
+\end{itemize}
+
+\begin{itemize}
+\item Efficient indexing for common query patterns
+\end{itemize}
+\end{frame}
+\section{SQL Query Construction}
+\begin{frame}{Methodology: Building Clinical SQL Queries}
+Effective clinical SQL queries require understanding data structures, defining analytical questions, and constructing efficient queries:
+
+\begin{center}
+\scalebox{0.7}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Component} & \textbf{SQL Clause} & \textbf{Purpose} \\
+\midrowcolor
+Filtering & WHERE & Row-level inclusion criteria based on patient/encounter attributes \\
+Aggregation & GROUP BY & Grouping records for summary statistics (counts, averages) \\
+Filtering Groups & HAVING & Post-aggregation filtering (e.g., facilities with >100 cases) \\
+Sorting & ORDER BY & Presentation ordering (ascending/descending) \\
+Joins & FROM table1 JOIN table2 & Combining related tables through key relationships \\
+Subqueries & (SELECT...) & Nested queries for complex logical conditions \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Query optimization principles for large healthcare databases:
+\begin{itemize}
+\item Use WHERE clauses early to reduce intermediate result sets
+\end{itemize}
+
+\begin{itemize}
+\item Index frequently queried columns (patient identifiers, dates, diagnosis codes)
+\end{itemize}
+
+\begin{itemize}
+\item Limit SELECT columns to only those needed for analysis
+\end{itemize}
+
+\begin{itemize}
+\item Consider query execution plans for complex multi-table joins
+\end{itemize}
+\end{frame}
+\begin{frame}{Example Queries for Clinical Analysis}
+Consider a hospital database with the following schema for a Kenyan county hospital:
+
+\textbf{Patient Table}: patient\_id, name, date\_of\_birth, gender, residence\_location
+
+\textbf{Encounter Table}: encounter\_id, patient\_id, admission\_date, discharge\_date, encounter\_type
+
+\textbf{Diagnosis Table}: dx\_id, encounter\_id, icd10\_code, diagnosis\_type (primary/secondary)
+
+\textbf{Lab Result Table}: lab\_id, encounter\_id, test\_code, result\_value, result\_date
+
+Query 1: Count of malaria cases by month in 2024
+\begin{semiverbatim}
+SELECT 
+    DATE_TRUNC('month', encounter.admission_date) AS month,
+    COUNT(DISTINCT encounter.encounter_id) AS case_count
+FROM encounter
+JOIN diagnosis ON encounter.encounter_id = diagnosis.encounter_id
+WHERE diagnosis.icd10_code LIKE 'B50%'  -- Malaria codes
+  AND encounter.admission_date >= '2024-01-01'
+  AND encounter.admission_date < '2025-01-01'
+GROUP BY DATE_TRUNC('month', encounter.admission_date)
+ORDER BY month;
+\end{semiverbatim}
+
+Query 2: Patients with diabetes and hypertension comorbidity
+\begin{semiverbatim}
+SELECT DISTINCT p.patient_id, p.name, p.date_of_birth
+FROM patient p
+JOIN encounter e ON p.patient_id = e.patient_id
+JOIN diagnosis d ON e.encounter_id = d.encounter_id
+WHERE d.icd10_code LIKE 'E11%'  -- Diabetes
+  AND EXISTS (
+    SELECT 1 FROM diagnosis d2 
+    WHERE d2.encounter_id = e.encounter_id 
+    AND d2.icd10_code LIKE 'I10%'  -- Hypertension
+  );
+\end{semiverbatim}
+\end{frame}
+\begin{frame}{Advanced Queries: Window Functions and Time-Series Analysis}
+Window functions enable sophisticated clinical calculations that would otherwise require complex subqueries:
+
+Query 3: Time between readmissions for heart failure patients
+\begin{semiverbatim}
+SELECT 
+    patient_id,
+    admission_date AS current_admission,
+    LAG(admission_date) OVER (
+        PARTITION BY patient_id 
+        ORDER BY admission_date
+    ) AS previous_admission,
+    admission_date - LAG(admission_date) OVER (
+        PARTITION BY patient_id 
+        ORDER BY admission_date
+    ) AS days_between_readmissions
+FROM encounter
+WHERE encounter_type = 'readmission'
+  AND EXISTS (
+    SELECT 1 FROM diagnosis 
+    WHERE encounter_id = encounter.encounter_id
+    AND icd10_code LIKE 'I50%'  -- Heart failure
+  )
+ORDER BY patient_id, admission_date;
+\end{semiverbatim}
+
+Query 4: Cumulative admissions by week during outbreak
+\begin{semiverbatim}
+SELECT 
+    week_start,
+    SUM(daily_admissions) OVER (ORDER BY week_start) AS cumulative_cases
+FROM (
+    SELECT 
+        DATE_TRUNC('week', admission_date)::date AS week_start,
+        COUNT(*) AS daily_admissions
+    FROM encounter
+    JOIN diagnosis ON encounter.encounter_id = diagnosis.encounter_id
+    WHERE icd10_code LIKE 'A00%'  -- Cholera
+      AND admission_date BETWEEN '2024-01-01' AND '2024-06-30'
+    GROUP BY DATE_TRUNC('week', admission_date)
+) weekly_data
+ORDER BY week_start;
+\end{semiverbatim}
+\end{frame}
+\section{Application Examples}
+\begin{frame}{Example: Quality Metric Calculation for Hospital Performance}
+A county health department needs to calculate quality metrics for multiple facilities:
+
+\begin{semiverbatim}
+-- Calculate facility-level quality metrics for maternal health
+SELECT 
+    f.facility_name,
+    f.district,
+    COUNT(DISTINCT e.encounter_id) AS total_deliveries,
+    SUM(CASE WHEN p.birth_weight < 2500 THEN 1 ELSE 0 END) AS low_birth_weight,
+    SUM(CASE WHEN e.complications = 1 THEN 1 ELSE 0 END) AS complications,
+    ROUND(
+        SUM(CASE WHEN p.birth_weight < 2500 THEN 1 ELSE 0 END)::numeric / 
+        COUNT(DISTINCT e.encounter_id) * 100, 1
+    ) AS lbw_percentage,
+    ROUND(
+        SUM(CASE WHEN e.complications = 1 THEN 1 ELSE 0 END)::numeric / 
+        COUNT(DISTINCT e.encounter_id) * 100, 1
+    ) AS complication_rate
+FROM facilities f
+JOIN encounter e ON f.facility_id = e.facility_id
+JOIN patient p ON e.patient_id = p.patient_id
+JOIN diagnosis d ON e.encounter_id = d.encounter_id
+WHERE d.icd10_code LIKE 'O80%'  -- Normal delivery
+   OR d.icd10_code LIKE 'O81%'  -- Assisted delivery
+   OR d.icd10_code LIKE 'O82%'  -- Cesarean section
+  AND e.admission_date >= '2024-01-01'
+  AND e.admission_date < '2025-01-01'
+GROUP BY f.facility_name, f.district
+HAVING COUNT(DISTINCT e.encounter_id) >= 50  -- Exclude very small facilities
+ORDER BY complication_rate DESC;
+\end{semiverbatim}
+\end{frame}
+\begin{frame}{Example: Cohort Definition for Clinical Research}
+Defining a research cohort requires complex inclusion and exclusion criteria:
+
+\begin{semiverbatim}
+-- Type 2 diabetes patients with poor glycemic control for intervention study
+WITH diabetes_patients AS (
+    SELECT DISTINCT p.patient_id
+    FROM patient p
+    JOIN encounter e ON p.patient_id = e.patient_id
+    JOIN diagnosis d ON e.encounter_id = d.encounter_id
+    WHERE d.icc10_code LIKE 'E11%'  -- Type 2 diabetes
+      AND e.admission_date >= '2022-01-01'
+),
+
+all_labs AS (
+    SELECT 
+        e.patient_id,
+        MAX(CASE WHEN l.test_code = 'HBA1C' THEN l.result_value END) AS latest_hba1c,
+        COUNT(CASE WHEN l.test_code = 'HBA1C' THEN 1 END) AS hba1c_count
+    FROM encounter e
+    JOIN lab_result l ON e.encounter_id = l.encounter_id
+    WHERE e.admission_date >= '2023-01-01'
+    GROUP BY e.patient_id
+)
+
+SELECT 
+    p.patient_id,
+    p.name,
+    p.date_of_birth,
+    p.residence_location,
+    al.latest_hba1c,
+    al.hba1c_count
+FROM diabetes_patients dp
+JOIN patient p ON dp.patient_id = p.patient_id
+JOIN all_labs al ON dp.patient_id = al.patient_id
+WHERE al.latest_hba1c > 8.0  -- Poor glycemic control
+  AND al.hba1c_count >= 2  -- At least 2 measurements
+  AND NOT EXISTS (  -- Exclude patients with type 1 diabetes
+    SELECT 1 FROM diagnosis d2 
+    WHERE d2.patient_id = dp.patient_id
+    AND d2.icd10_code LIKE 'E10%'
+  )
+ORDER BY al.latest_hba1c DESC;
+\end{semiverbatim}
+\end{frame}
+\section{LMIC Context: Sub-Saharan Africa}
+\begin{frame}{SQL in Resource-Constrained Health Information Systems}
+The application of SQL in African health contexts requires adaptation to infrastructure realities:
+
+\begin{center}
+\scalebox{0.7}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Platform} & \textbf{SQL Capability} & \textbf{LMIC Use Case} \\
+\midrowcolor
+DHIS2 & PostgreSQL backend, custom functions & National health facility reporting, aggregate indicators \\
+OpenMRS & MySQL, complex query layer & Patient-level clinical data, research queries \\
+iHRIS & PostgreSQL, standardized reports & Health workforce tracking, training records \\
+District Health Info System & MySQL, aggregated queries & District-level surveillance, HMIS reporting \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+DHIS2, implemented across most of Sub-Saharan Africa, uses a PostgreSQL backend that supports sophisticated SQL queries for:
+\begin{itemize}
+\item Aggregate indicator calculation from facility reports
+\end{itemize}
+
+\begin{itemize}
+\item Validation rules and data quality checks
+\end{itemize}
+
+\begin{itemize}
+\item Custom data export for analysis and research
+\end{itemize}
+
+\begin{itemize}
+\item Dashboard data preparation and summary statistics
+\end{itemize}
+
+However, DHIS2 primarily operates at the aggregate level, with patient-level data typically managed in OpenMRS or similar systems at facility level.
+\end{frame}
+\begin{frame}{Capacity Building for SQL Skills in African Health Systems}
+Building SQL analytical capacity in African health institutions requires multi-level approaches:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+\node[draw,rectangle,fill=blue!20,minimum width=2.5cm,minimum height=1cm] (F) at (0,1.5) {Foundational\\SQL Training};
+\node[draw,rectangle,fill=green!20,minimum width=2.5cm,minimum height=1cm] (H) at (3.5,1.5) {Health\\Informatics Curriculum};
+\node[draw,rectangle,fill=red!20,minimum width=2.5cm,minimum height=1cm] (M) at (7,1.5) {Mentorship\\Programs};
+\node[draw,rectangle,fill=yellow!20,minimum width=2.5cm,minimum height=1cm] (C) at (3.5,-0.5) {Community\\of Practice};
+\node[draw,ellipse,fill=purple!10,minimum width=10cm,minimum height=2.5cm] (I) at (3.5,0.5) {};
+\draw[->,thick] (F) -- (H);
+\draw[->,thick] (H) -- (M);
+\draw[->,thick] (M) -- (C);
+\draw[->,thick] (C) -- (1.5,0.5) -- (F);
+\node[draw,rectangle,fill=gray!20,minimum width=10cm,minimum height=0.6cm] at (3.5,-1.8) {Key competencies: Basic queries, joins, aggregation, data quality, result interpretation};
+\end{tikzpicture}
+\end{center}
+
+Recommended capacity-building interventions:
+\begin{itemize}
+\item Integration of SQL modules into health informatics training programs at African universities
+\end{itemize}
+
+\begin{itemize}
+\item Practical workshops using anonymized real-world health data
+\end{itemize}
+
+\begin{itemize}
+\item Development of local query libraries and documentation
+\end{itemize}
+
+\begin{itemize}
+\item Regional networks for peer support and knowledge sharing (e.g., HealthData Community)
+\end{itemize}
+
+The Tanzania Health Information Systems Program (T-HISP) has pioneered such approaches, building a network of over 500 health information officers trained in SQL-based analysis.
+\end{frame}
+\section{Summary}
+\begin{frame}{Key Takeaways}
+\begin{enumerate}
+1. SQL provides the foundational query capability for extracting clinical insights from relational health databases, supporting everything from routine reporting to clinical research.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+2. Understanding healthcare data models and relational structures is essential for constructing accurate and efficient queries across multiple tables.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+3. Advanced SQL features including window functions, common table expressions, and subqueries enable sophisticated clinical analyses including cohort definition and time-series calculations.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+4. In African health systems, SQL is primarily applied through platforms like DHIS2 and OpenMRS, each with different data models and query capabilities.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+5. Building sustainable SQL analytical capacity requires training programs, mentorship, and community networks that connect health information professionals across institutions.
+\end{enumerate}
+
+\begin{center}
+\textbf{Questions for Further Discussion}
+\end{center}
+
+How can health facilities in resource-constrained settings develop the query and analysis capabilities needed for evidence-based decision-making? What role can standardized query templates and dashboards play in bridging the analytical capacity gap?
+\end{frame}
+\end{document}

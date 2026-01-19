@@ -1,0 +1,298 @@
+\documentclass[9pt,xcolor=dvipsnames,aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,graphicx,tikz,pgfplots,booktabs,siunitx}
+\usetikzlibrary{arrows,shapes,decorations.pathmorphing,decorations.pathreplacing,decorations.snapping,fit,positioning,calc,intersections,shapes.geometric,backgrounds}
+\usetheme[numbering=fraction,titleformat=smallcaps,sectionpage=progressbar]{metropolis}
+\usepackage[style=authoryear]{biblatex}
+\addbibresource{references.bib}
+\setbeamertemplate{bibliography item}[text]
+\graphicspath{{../assets/}}
+\DeclareMathOperator{\e}{e}
+\title{\Large SDS6210: Informatics for Health\\[0.3em]\small Wednesday Set 2, Q2: Learning Health Systems}
+\author{\textbf{Cavin Otieno}}
+\institute{MSc Public Health Data Science\\Department of Health Informatics}
+\date{\today}
+\begin{document}
+\begin{frame}[noframenumbering,plain]
+    \maketitleslide
+\end{frame}
+\section{Definition and Theoretical Framework}
+\begin{frame}{Definition: Learning Health System}
+A Learning Health System (LHS) is a health system in which data generated during routine clinical care and public health practice are systematically collected, analyzed, and applied to continuously improve the quality, efficiency, and equity of health services. The LHS concept, articulated by the Institute of Medicine (now National Academy of Medicine), envisions a healthcare ecosystem where "science, informatics, incentives, and culture are aligned for continuous improvement and innovation."
+
+The core premise of the LHS is that every clinical encounter generates valuable data that, when aggregated and analyzed, can produce insights to improve care for future patients. This creates a virtuous cycle where:
+\begin{enumerate}
+\item Patients receive care informed by the best available evidence
+2. The care process generates data about what works and what does not
+3. Analytics transform data into actionable knowledge
+4. Knowledge is incorporated into clinical practice
+5. The cycle repeats with continuously improving care
+\end{enumerate}
+
+The LHS represents a paradigm shift from episodic evidence generation (through controlled clinical trials) to continuous evidence generation embedded in routine practice.
+\end{frame}
+\begin{frame}{Theoretical Framework: The LHS Cycle}
+The Learning Health System operates through interconnected cycles operating at multiple levels:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+\node[draw,rectangle,fill=blue!20,minimum width=2.2cm,minimum height=1.2cm] (C) at (0,1.5) {Clinical\\Encounters};
+\node[draw,rectangle,fill=green!20,minimum width=2.2cm,minimum height=1.2cm] (D) at (3.5,1.5) {Data\\Collection};
+\node[draw,rectangle,fill=red!20,minimum width=2.2cm,minimum height=1.2cm] (A) at (7,1.5) {Analytics};
+\node[draw,rectangle,fill=yellow!20,minimum width=2.2cm,minimum height=1.2cm] (K) at (7,-1) {Knowledge};
+\node[draw,rectangle,fill=purple!20,minimum width=2.2cm,minimum height=1.2cm] (I) at (3.5,-1) {Practice\\Change};
+\node[draw,rectangle,fill=orange!20,minimum width=2.2cm,minimum height=1.2cm] (B) at (0,-1) {Better\\Outcomes};
+\draw[->,thick] (C) -- (D) node[midway,above] {Data capture};
+\draw[->,thick] (D) -- (A) node[midway,above] {Processing};
+\draw[->,thick] (A) -- (K) node[midway,right] {Evidence};
+\draw[->,thick] (K) -- (I) node[midway,above] {Translation};
+\draw[->,thick] (I) -- (B) node[midway,above] {Implementation};
+\draw[->,thick] (B) -- (0,0.5) -- (C) node[midway,left] {Feedback};
+\node[draw,ellipse,fill=gray!10,minimum width=11cm,minimum height=4cm] (Outer) at (3.5,0.2) {};
+\node at (3.5,2.5) {\textbf{Micro-Cycle: Individual Patient to Population}};
+\end{tikzpicture}
+\end{center}
+
+Mathematical representation of the LHS feedback system:
+\[
+\mathbf{y}_{t+1} = f(\mathbf{y}_t, \mathbf{u}_t, \theta_t)
+\]
+where $\mathbf{y}$ represents patient outcomes, $\mathbf{u}$ represents interventions, and $\theta$ represents the learned parameters of the system that evolve over time as new data arrives.
+\end{frame}
+\section{Methods and Implementation}
+\begin{frame}{Methodology: Implementing Learning Health Systems}
+Successful LHS implementation requires attention to multiple technical, organizational, and cultural dimensions:
+
+\begin{center}
+\scalebox{0.7}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Dimension} & \textbf{Components} & \textbf{Key Considerations} \\
+\midrowcolor
+Data Infrastructure & EHR systems, data warehouses, FHIR APIs & Standardized data models, interoperability, quality controls \\
+Analytics Capability & Statistical methods, machine learning, causal inference & Reproducible analysis pipelines, uncertainty quantification \\
+Knowledge Translation & Clinical decision support, guidelines, dashboards & Actionable insights, minimal cognitive burden, feedback loops \\
+Governance & IRB mechanisms, data use agreements, oversight & Privacy protection, ethical oversight, stakeholder engagement \\
+Culture & Leadership commitment, clinician engagement & Incentives aligned with learning, psychological safety \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+The concept of "research-ready" data requires investment in data quality improvement. Key metrics include:
+\begin{itemize}
+\item \textbf{Completeness}: Proportion of required data elements captured
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Consistency**: Agreement of data across sources and over time
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Timeliness**: Currency of data for intended analytical purpose
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Accuracy**: Agreement with gold standard measurements
+\end{itemize}
+\end{frame}
+\begin{frame}{Data Infrastructure for LHS}
+Modern LHS infrastructure leverages cloud computing, standardized data models, and distributed analytics:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+\node[draw,rectangle,fill=blue!20,minimum width=2cm,minimum height=1cm] (EHR) at (0,1.5) {EHR Systems};
+\node[draw,rectangle,fill=green!20,minimum width=2cm,minimum height=1cm] (REG) at (3,1.5) {Registries};
+\node[draw,rectangle,fill=red!20,minimum width=2cm,minimum height=1cm] (SURV) at (6,1.5) {Surveillance};
+\node[draw,rectangle,fill=yellow!20,minimum width=2cm,minimum height=1cm] (SOC) at (9,1.5) {Social Data};
+\node[draw,rectangle,fill=purple!20,minimum width=1.5cm,minimum height=1.2cm] (OMOP) at (4.5,0) {OMOP\\CDM};
+\node[draw,rectangle,fill=orange!20,minimum width=1.5cm,minimum height=1.2cm] (AP) at (4.5,-1.8) {Analytics\\Platform};
+\node[draw,ellipse,fill=gray!10,minimum width=10cm,minimum height=1cm] (I) at (4.5,-0.3) {};
+\node[draw,rectangle,fill=teal!20,minimum width=3cm,minimum height=1cm] (CDSS) at (4.5,-3) {Clinical Decision\\Support Systems};
+\draw[->,thick] (EHR) -- (OMOP);
+\draw[->,thick] (REG) -- (OMOP);
+\draw[->,thick] (SURV) -- (OMOP);
+\draw[->,thick] (SOC) -- (OMOP);
+\draw[->,thick] (OMOP) -- (AP);
+\draw[->,thick] (AP) -- (CDSS);
+\end{tikzpicture}
+\end{center}
+
+The Observational Medical Outcomes Partnership Common Data Model (OMOP CDM) provides a standardized representation that enables:
+\begin{itemize}
+\item Distributed analytics across multiple institutions without data sharing
+\end{itemize}
+
+\begin{itemize}
+\item Code portability across different EHR platforms
+\end{itemize}
+
+\begin{itemize}
+\item Scalable analysis using distributed computing frameworks
+\end{itemize}
+
+\begin{itemize}
+\item Reuse of analytical code across different healthcare systems
+\end{itemize}
+\end{frame}
+\section{Application Examples}
+\begin{frame}{Example: PCORnet and Distributed Research Networks}
+PCORnet, the National Patient-Centered Clinical Research Network in the United States, exemplifies the LHS model at scale:
+
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Feature} & \textbf{Description} & \textbf{LMIC Relevance} \\
+\midrowcolor
+Distributed Network & 9 Clinical Research Networks, 2 Health Plan Networks & Model for regional health information exchanges \\
+Common Data Model & Standardized tables, vocabularies, conventions & Enables multi-site analysis without data transfer \\
+Patient Engagement & Patient representatives in governance & Community ownership of research priorities \\
+Pragmatic Trials & Embedded trials in routine care settings & Efficient evidence generation in real-world settings \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Key LHS studies conducted through PCORnet include:
+\begin{itemize}
+\item \textbf{ADAPTABLE} (Aspirin Study): Pragmatic trial comparing 81mg vs 325mg aspirin using EHR data for enrollment and outcomes
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Influenza Vaccine Effectiveness**: Annual evaluation of vaccine performance using distributed analytics
+\end{itemize}
+
+The distributed model addresses privacy concerns by keeping data at source sites while enabling network-wide analysis, a feature highly relevant to LMIC contexts with data sovereignty concerns.
+\end{frame}
+\begin{frame}{Example: Sentinel System for Drug Safety}
+The FDA Sentinel System demonstrates LHS principles for post-market drug safety surveillance:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+\node[draw,rectangle,fill=blue!20,minimum width=2cm,minimum height=1.2cm] (P) at (0,1) {18 Data Partners};
+\node[draw,rectangle,fill=green!20,minimum width=2.5cm,minimum height=1.2cm] (CDW) at (3.5,1) {Sentinel\\Common Data Model};
+\node[draw,rectangle,fill=red!20,minimum width=2cm,minimum height=1.2cm] (DR) at (7,1) {Distributed\\Analytics};
+\node[draw,rectangle,fill=yellow!20,minimum width=2.5cm,minimum height=1.2cm] (F) at (5,-1) {FDA\\Review};
+\node[draw,rectangle,fill=purple!20,minimum width=2.5cm,minimum height=1.2cm] (S) at (2,-1) {Safety\\Signals};
+\draw[->,thick] (P) -- (CDW);
+\draw[->,thick] (CDW) -- (DR);
+\draw[->,thick] (DR) -- (F) node[midway,right] {Findings};
+\draw[->,thick] (DR) -- (S) node[midway,left] {Alerts};
+\node[draw,rectangle,fill=gray!20,minimum width=10cm,minimum height=0.6cm] at (3.5,-2.2) {Queries: Disproportionality analysis, self-controlled case series, new user cohort studies};
+\end{tikzpicture}
+\end{center}
+
+The Sentinel System accesses data from 18 healthcare organizations covering over 350 million patient records. Key capabilities:
+\begin{itemize}
+\item Query distribution to partner sites without central data collection
+\end{itemize}
+
+\begin{itemize}
+\item Standardized analytic packages for common safety questions
+\end{itemize}
+
+\begin{itemize}
+\item Rapid turnaround (days to weeks vs. years for traditional studies)
+\end{itemize}
+
+For LMICs, the Sentinel model offers a blueprint for pharmacovigilance systems that overcome the challenge of fragmented healthcare data.
+\end{frame}
+\section{LMIC Context: Sub-Saharan Africa}
+\begin{frame}{Learning Health Systems in African Health Contexts}
+Implementing LHS principles in African health systems requires adaptation to local realities:
+
+\begin{center}
+\scalebox{0.7}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Challenge} & \textbf{Impact on LHS} & \textbf{Adaptation Approach} \\
+\midrowcolor
+Fragmented Data Systems & Limited EHR penetration, multiple vertical programs & DHIS2 as national aggregation layer, paper-based data digitization \\
+Infrastructure Constraints & Limited connectivity, power instability & Offline-first applications, periodic synchronization \\
+Human Resource Gaps & Limited data science capacity & Task-shifting, simplified analytics tools, regional networks \\
+Funding Instability & Short-term project cycles, sustainability concerns & Government budget integration, efficiency arguments \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+The KEMRI (Kenya Medical Research Institute) has pioneered LHS approaches in Kenya through:
+\begin{itemize}
+\item The Clinical Information Network linking 20 Kenyan hospitals for pediatric research
+\end{itemize}
+
+\begin{itemize}
+\item Integration of research findings into national guidelines (e.g., malaria treatment protocols)
+\end{itemize}
+
+\begin{itemize}
+\item Training programs building local capacity for embedded research
+\end{itemize}
+
+The network demonstrates how routine data from DHIS2 and paper-based systems can be leveraged for continuous quality improvement.
+\end{frame}
+\begin{frame}{Case Study: Malaria Quality of Care Improvement}
+A Learning Health System approach to malaria quality improvement in Ghana demonstrates the cycle in practice:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+\node[draw,rectangle,fill=blue!20,minimum width=2.2cm,minimum height=1cm] (D) at (0,1.5) {Routine DHIS2\\Data};
+\node[draw,rectangle,fill=green!20,minimum width=2.2cm,minimum height=1cm] (A) at (3.5,1.5) {Quality\\Analysis};
+\node[draw,rectangle,fill=red!20,minimum width=2.2cm,minimum height=1cm] (F) at (7,1.5) {Facility\\Feedback};
+\node[draw,rectangle,fill=yellow!20,minimum width=2.2cm,minimum height=1cm] (I) at (5.5,-0.5) {Improvement\\Plans};
+\node[draw,rectangle,fill=purple!20,minimum width=2.2cm,minimum height=1cm] (O) at (2.5,-0.5) {Outcome\\Improvement};
+\node[draw,ellipse,fill=gray!10,minimum width=10cm,minimum height=3.5cm] (C) at (3.5,0.5) {};
+\draw[->,thick] (D) -- (A);
+\draw[->,thick] (A) -- (F);
+\draw[->,thick] (F) -- (I);
+\draw[->,thick] (I) -- (O);
+\draw[->,thick] (O) -- (1.5,0.5) -- (D) node[midway,below] {Continuous\\learning};
+\end{tikzpicture}
+\end{center}
+
+The Ghana Health Service implemented quarterly quality reports showing each facility:
+\begin{itemize}
+\item Malaria testing rates (vs. presumptive treatment)
+\end{itemize}
+
+\begin{itemize}
+\item Artemisinin-based combination therapy (ACT) prescription appropriateness
+\end{itemize}
+
+\begin{itemize}
+\item Comparison with peer facilities and national targets
+\end{itemize}
+
+Over three years, testing rates improved from 45\% to 82\%, demonstrating how LHS cycles can drive measurable quality improvement in LMIC settings.
+\end{frame}
+\section{Summary}
+\begin{frame}{Key Takeaways}
+\begin{enumerate}
+1. Learning Health Systems create continuous cycles where clinical data generates insights that improve care, with each patient encounter contributing to collective knowledge.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+2. LHS implementation requires coordinated development of data infrastructure, analytics capability, knowledge translation mechanisms, governance frameworks, and supportive culture.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+3. Distributed research networks like PCORnet and Sentinel demonstrate how multi-site collaboration can occur without compromising data privacy or institutional autonomy.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+4. African adaptations of LHS principles must address data fragmentation, infrastructure constraints, and human resource gaps through appropriate technology and capacity-building strategies.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+5. Quality improvement initiatives in Ghana and Kenya demonstrate that LHS approaches can drive measurable improvements even in settings with limited EHR penetration.
+\end{enumerate}
+
+\begin{center}
+\textbf{Questions for Further Discussion}
+\end{center}
+
+How can Learning Health System principles be applied to strengthen health systems in settings where EHR penetration is low and much health data remains on paper? What governance mechanisms are needed to ensure that learning activities benefit the populations they study?
+\end{frame}
+\end{document}

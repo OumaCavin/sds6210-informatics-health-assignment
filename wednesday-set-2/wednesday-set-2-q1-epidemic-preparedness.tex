@@ -1,0 +1,275 @@
+\documentclass[9pt,xcolor=dvipsnames,aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,graphicx,tikz,pgfplots,booktabs,siunitx}
+\usetikzlibrary{arrows,shapes,decorations.pathmorphing,decorations.pathreplacing,decorations.snapping,fit,positioning,calc,intersections,shapes.geometric,backgrounds}
+\usetheme[numbering=fraction,titleformat=smallcaps,sectionpage=progressbar]{metropolis}
+\usepackage[style=authoryear]{biblatex}
+\addbibresource{references.bib}
+\setbeamertemplate{bibliography item}[text]
+\graphicspath{{../assets/}}
+\DeclareMathOperator{\e}{e}
+\title{\Large SDS6210: Informatics for Health\\[0.3em]\small Wednesday Set 2, Q1: Digital Epidemic Preparedness}
+\author{\textbf{Cavin Otieno}}
+\institute{MSc Public Health Data Science\\Department of Health Informatics}
+\date{\today}
+\begin{document}
+\begin{frame}[noframenumbering,plain]
+    \maketitleslide
+\end{frame}
+\section{Definition and Theoretical Framework}
+\begin{frame}{Definition: Digital Epidemic Preparedness}
+Digital epidemic preparedness refers to the systematic application of digital health technologies, data analytics, and information systems to strengthen capacities for the early detection, monitoring, and response to infectious disease outbreaks before they reach crisis proportions. This discipline integrates surveillance systems, laboratory networks, communication technologies, and analytical tools into coordinated preparedness frameworks.
+
+The World Health Organization defines epidemic preparedness as "the knowledge, capacities, and organizational systems developed by governments, response organizations, communities, and individuals to effectively anticipate, detect, respond to, and recover from outbreaks." Digital epidemic preparedness specifically emphasizes the technological and data-driven components of this definition.
+
+Core components include:
+\begin{itemize}
+\item \textbf{Syndromic Surveillance}: Real-time monitoring of symptom patterns in healthcare facilities and community settings
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Event-Based Surveillance}: Systematic collection and analysis of informal information sources (news reports, social media, animal health reports)
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Laboratory Information Systems}: Sample tracking, test result reporting, and pathogen characterization
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Analytics and Modeling}: Predictive models for outbreak detection, spread forecasting, and resource allocation
+\end{itemize}
+\end{frame}
+\begin{frame}{Theoretical Framework: Surveillance-Epidemic Response Cycle}
+Digital epidemic preparedness operates within a cyclical framework connecting surveillance, analysis, and response:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+\node[draw,rectangle,fill=blue!20,minimum width=2.5cm,minimum height=1.2cm] (S) at (0,1.5) {Surveillance\\Data Collection};
+\node[draw,rectangle,fill=green!20,minimum width=2.5cm,minimum height=1.2cm] (A) at (4,1.5) {Analysis\\and Detection};
+\node[draw,rectangle,fill=red!20,minimum width=2.5cm,minimum height=1.2cm] (R) at (4,-1.5) {Response\\Coordination};
+\node[draw,rectangle,fill=yellow!20,minimum width=2.5cm,minimum height=1.2cm] (P) at (0,-1.5) {Planning\\and Prep};
+\draw[->,thick] (S) -- (A) node[midway,above] {Data streams};
+\draw[->,thick] (A) -- (R) node[midway,right] {Alert signals};
+\draw[->,thick] (R) -- (P) node[midway,below] {Response outcomes};
+\draw[->,thick] (P) -- (S) node[midway,left] {Capacity building};
+\node[draw,ellipse,fill=gray!10,minimum width=11cm,minimum height=4cm] (C) at (2,0) {};
+\node at (2,2.2) {\textbf{Digital Epidemic Preparedness Cycle}};
+\end{tikzpicture}
+\end{center}
+
+Mathematical formulation of surveillance system sensitivity:
+\[
+\text{Sensitivity} = P(\text{Alert}|\text{Outbreak}) = \frac{P(\text{Outbreak}|\text{Alert}) \times P(\text{Alert})}{P(\text{Outbreak})}
+\]
+The surveillance system must balance sensitivity (detecting true outbreaks) against specificity (avoiding false alarms) while minimizing time to detection.
+\end{frame}
+\section{Methods and Detection Systems}
+\begin{frame}{Methodology: Digital Surveillance System Design}
+Designing effective digital surveillance systems requires attention to multiple technical and operational dimensions:
+
+\begin{center}
+\scalebox{0.7}{
+\begin{tabular}{@{}llp{4cm}p{3.5cm}@{}}
+\toprule
+\textbf{Component} & \textbf{Data Sources} & \textbf{Analytics Methods} & \textbf{LMIC Considerations} \\
+\midrowcolor
+Syndromic & Chief complaints, ICD-10 codes, OTC drug sales & Time-series anomaly detection, spatial clustering & Variable data quality, limited facility reporting \\
+Event-based & Media reports, social media, ProMED, HealthMap & NLP entity extraction, topic modeling, trend analysis & Internet access limitations, information verification \\
+Laboratory & Test results, sample IDs, genomic sequences & Phylogenetic analysis, resistance detection & Lab capacity constraints, sample transport delays \\
+Mobility & Mobile phone data, flight records, road traffic & Gravity models, metapopulation simulations & Data access restrictions, privacy concerns \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+The detection threshold for outbreak alerts balances sensitivity against false positive rates. A common approach uses control chart methodology:
+\[
+\text{Upper Control Limit} = \bar{x} + k \times \sigma
+\]
+where $\bar{x}$ is the historical mean, $\sigma$ is the standard deviation, and $k$ is typically set to 3 for a 99.7\% confidence threshold.
+\end{frame}
+\begin{frame}{Mathematical Models for Outbreak Detection}
+Cumulative Sum (CUSUM) and Exponentially Weighted Moving Average (EWMA) methods provide statistical foundations for outbreak detection:
+
+\textbf{CUSUM Method}:
+\[
+C_t = \max(0, C_{t-1} + (x_t - \mu_0 - k\sigma))
+\]
+where $x_t$ is the observed count at time $t$, $\mu_0$ is the expected count under baseline conditions, and $k$ is the slack parameter. An alert is triggered when $C_t > h$ where $h$ is the control limit.
+
+\textbf{EWMA Method}:
+\[
+z_t = \lambda x_t + (1-\lambda) z_{t-1}
+\]
+where $\lambda$ is the weighting factor (typically 0.2-0.3). The control limit is:
+\[
+\text{UCL} = \mu_0 + L \sigma \sqrt{\frac{\lambda}{2-\lambda}}
+\]
+where $L$ is the multiple of standard deviations.
+
+For spatial outbreak detection, SaTScan statistics identify significant clusters:
+\[
+\text{SaTScan Statistic} = \max_{z} \frac{L(z)}{E[L(z)]}
+\]
+where $L(z)$ is the likelihood ratio for window $z$ and $E[L(z)]$ is the expected value under the null hypothesis of no cluster.
+\end{frame}
+\section{Application Examples}
+\begin{frame}{Case Study: Ebola Surveillance in West Africa}
+The 2014-2016 Ebola outbreak in West Africa catalyzed significant investment in digital epidemic preparedness systems:
+
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{System} & \textbf{Implementation} & \textbf{Contribution} \\
+\midrowcolor
+EVD Data Platform & Sierra Leone Ministry of Health & Real-time case tracking, contact tracing management, laboratory integration \\
+GeoODK & Field surveillance teams & GPS-tagged case investigation forms, offline data collection \\
+OpenMRS Ebola Module & Treatment centers & Patient management, bed availability tracking, outcome reporting \\
+Mobile-based Contact Tracing & Guinea, Liberia & SMS-based daily symptom checks for contacts, GPS boundary alerts \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+The OpenMRS Ebola Module, adapted from the open-source EMR platform, enabled treatment centers to track over 28,000 cases across 3 countries. Key features included:
+\begin{itemize}
+\item Contact relationship mapping to identify chains of transmission
+\item Real-time bed availability dashboards for patient referral coordination
+\item Integration with laboratory systems for test result notification
+\end{itemize}
+
+Lessons learned included the importance of offline-capable systems in areas with unreliable connectivity and the need for rapid system adaptation as outbreak dynamics evolved.
+\end{frame}
+\begin{frame}{Case Study: COVID-19 Early Detection in Africa}
+Several African nations leveraged digital surveillance for COVID-19 early detection and response:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+\node[draw,rectangle,fill=blue!20,minimum width=2.5cm,minimum height=1cm] (T) at (0,1) {Traveler Screening};
+\node[draw,rectangle,fill=green!20,minimum width=2.5cm,minimum height=1cm] (S) at (3.5,1) {Syndromic Surveillance};
+\node[draw,rectangle,fill=red!20,minimum width=2.5cm,minimum height=1cm] (L) at (7,1) {Lab Network};
+\node[draw,rectangle,fill=yellow!20,minimum width=2.5cm,minimum height=1cm] (A) at (3.5,-1.5) {Analytics Dashboard};
+\node[draw,rectangle,fill=purple!20,minimum width=2.5cm,minimum height=1cm] (R) at (7,-1.5) {Response Coordination};
+\draw[->,thick] (T) -- (A);
+\draw[->,thick] (S) -- (A);
+\draw[->,thick] (L) -- (A);
+\draw[->,thick] (A) -- (R);
+\node[draw,rectangle,fill=gray!20,minimum width=10cm,minimum height=0.6cm] at (3.5,-2.8) {Integration layer: DHIS2 Aggregate Reporting, SORMAS Case Management};
+\end{tikzpicture}
+\end{center}
+
+Nigeria's integrated COVID-19 surveillance system (using SORMAS - Surveillance Outbreak Response Management and Analysis System) demonstrated:
+\begin{itemize}
+\item Detection of first cases within 48 hours of test availability through airport screening integration
+\end{itemize}
+
+\begin{itemize}
+\item Contact tracing management for over 500,000 identified contacts
+\end{itemize}
+
+\begin{itemize}
+\item Real-time dashboards informing state-level resource allocation decisions
+\end{itemize}
+
+The system was later adapted for mpox surveillance, demonstrating the value of preparedness investments for multiple disease threats.
+\end{frame}
+\section{LMIC Context: Sub-Saharan Africa}
+\begin{frame}{Epidemic Preparedness Infrastructure in Africa}
+Africa has made significant investments in epidemic preparedness infrastructure following the Ebola outbreaks:
+
+\begin{center}
+\scalebox{0.7}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Initiative} & \textbf{Scope} & \textbf{Key Components} \\
+\midrowcolor
+Africa CDC Regional Integrated Surveillance and Laboratory Network (RISLNET) & Continental & 40+ labs, pathogen sequencing capacity, emergency response teams \\
+WHO AFRO Emergency Operations Center Network & Regional & 47 countries with EOC capacity, standardized incident management systems \\
+East Africa Community Cross-Border Disease Surveillance & Regional & Joint risk assessments, coordinated response protocols, shared data platforms \\
+Nigeria Centre for Disease Control Strengthening & National & National Reference Lab, 12 state EOCs, digital surveillance systems \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+The Africa CDC established the Africa Pathogen Genomics Initiative (2021) to build sequencing capacity across the continent. By 2024, 30 African countries had some sequencing capability, enabling:
+\begin{itemize}
+\item Early detection of SARS-CoV-2 variants (Beta variant first identified in South Africa)
+\end{itemize}
+
+\begin{itemize}
+\item Continued surveillance for Ebola, Marburg, and other high-priority pathogens
+\end{itemize}
+
+\begin{itemize}
+\item Regional cooperation on antimicrobial resistance monitoring
+\end{itemize}
+
+Challenges remain including sustainable funding, trained personnel retention, and equipment maintenance in remote locations.
+\end{frame}
+\begin{frame}{Community-Based Surveillance and Digital Tools}
+Community-based surveillance (CBS) extends digital preparedness to the grassroots level:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+\node[draw,rectangle,fill=blue!20,minimum width=2cm,minimum height=1cm] (CHW) at (0,1) {Community\\Health Worker};
+\node[draw,rectangle,fill=green!20,minimum width=2cm,minimum height=1cm] (APP) at (3,1) {Mobile\\Application};
+\node[draw,rectangle,fill=red!20,minimum width=2cm,minimum height=1cm] (DHIS) at (6,1) {District\\DHIS2};
+\node[draw,rectangle,fill=yellow!20,minimum width=2cm,minimum height=1cm] (EOC) at (3,-1) {District\\EOC};
+\node[draw,ellipse,fill=purple!10,minimum width=8cm,minimum height=3cm] (C) at (3,0.3) {};
+\draw[->,thick] (CHW) -- (APP) node[midway,above] {Case reports};
+\draw[->,thick] (APP) -- (DHIS) node[midway,above] {Auto-upload};
+\draw[->,thick] (DHIS) -- (EOC) node[midway,right] {Alert triggers};
+\draw[->,thick,dashed] (EOC) -- (2,0.3) -- (CHW) node[midway,below] {Feedback/Action};
+\node[draw,rectangle,fill=gray!20,minimum width=10cm,minimum height=0.6cm] at (3,-2.2) {CBS triggers: Unusual deaths, Acute watery diarrhea, Hemorrhagic symptoms};
+\end{tikzpicture}
+\end{center}
+
+The REDISSE (Regional Disease Surveillance Systems Enhancement) project in West Africa trained over 15,000 community health workers in CBS using mobile tools. Key features:
+\begin{itemize}
+\item Offline-capable case reporting with GPS coordinates
+\end{itemize}
+
+\begin{itemize}
+\item Automated alerts for trigger conditions to district EOCs
+\end{itemize}
+
+\begin{itemize}
+\item Two-way communication enabling response teams to request investigation
+\end{itemize}
+
+\begin{itemize}
+\item Integration with existing community health worker programs for sustainability
+\end{itemize}
+\end{frame}
+\section{Summary}
+\begin{frame}{Key Takeaways}
+\begin{enumerate}
+1. Digital epidemic preparedness integrates surveillance systems, laboratory networks, analytics, and communication technologies into coordinated frameworks for outbreak detection and response.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+2. Statistical methods including CUSUM, EWMA, and SaTScan provide mathematical foundations for automated outbreak detection while balancing sensitivity and specificity.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+3. The COVID-19 and Ebola experiences demonstrate both the potential and challenges of digital surveillance systems in African contexts.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+4. Continental initiatives including Africa CDC's pathogen genomics network and the EOC network have strengthened African epidemic preparedness capacity.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+5. Community-based surveillance extends digital preparedness to the grassroots level, leveraging community health workers as the first line of detection.
+\end{enumerate}
+
+\begin{center}
+\textbf{Questions for Further Discussion}
+\end{center}
+
+How can African nations build sustainable epidemic preparedness infrastructure that maintains readiness between outbreaks? What role should the private sector and civil society play in complementing government-led preparedness efforts?
+\end{frame}
+\end{document}

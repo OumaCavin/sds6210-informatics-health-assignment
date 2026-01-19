@@ -1,0 +1,228 @@
+\documentclass[9pt,xcolor=dvipsnames,aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,graphicx,tikz,pgfplots,booktabs,siunitx}
+\usetikzlibrary{arrows,shapes,decorations.pathmorphing,decorations.pathreplacing,decorations.snapping,fit,positioning,calc,intersections,shapes.geometric,backgrounds}
+\usetheme[numbering=fraction,titleformat=smallcaps,sectionpage=progressbar]{metropolis}
+\usepackage[style=authoryear]{biblatex}
+\addbibresource{references.bib}
+\setbeamertemplate{bibliography item}[text]
+\graphicspath{{../assets/}}
+\DeclareMathOperator{\e}{e}
+\title{\Large SDS6210: Informatics for Health\\[0.3em]\small Tuesday Set 2, Q2: Ethics of AI in Public Health Surveillance}
+\author{\textbf{Cavin Otieno}}
+\institute{MSc Public Health Data Science\\Department of Health Informatics}
+\date{\today}
+\begin{document}
+\begin{frame}[noframenumbering,plain]
+    \maketitleslide
+\end{frame}
+\section{Definition and Theoretical Framework}
+\begin{frame}{Definition: AI Ethics in Public Health}
+AI ethics in public health refers to the moral principles and guidelines that govern the development, deployment, and governance of artificial intelligence systems used for population health monitoring, disease surveillance, and health policy decision-making. This interdisciplinary field draws from bioethics, computer science, philosophy, and public health ethics.
+
+The core ethical principles applicable to AI in public health surveillance include:
+\begin{itemize}
+\item \textbf{Autonomy}: Respecting individual rights to privacy and informed consent in data collection and processing
+\item \textbf{Beneficence}: Maximizing benefits for population health through accurate and timely surveillance
+\item \textbf{Non-maleficence}: Avoiding harm from algorithmic errors, bias, or misuse of health data
+\item \textbf{Justice}: Ensuring equitable distribution of benefits and burdens across population groups
+\end{itemize}
+
+These principles are operationalized through frameworks such as the WHO Guidance on Ethics and Governance of AI for Health, which specifically addresses the use of AI in pandemic preparedness and response.
+\end{frame}
+\begin{frame}{Theoretical Framework: Ethical Principles for AI Systems}
+The theoretical foundation for AI ethics in public health draws from multiple philosophical traditions:
+
+\begin{itemize}
+\item \textbf{Consequentialism}: Evaluates AI systems based on their outcomes. A surveillance system that correctly identifies disease outbreaks earlier than traditional methods produces better consequences for population health, but must weigh this against privacy harms.
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Deontological Ethics}: Focuses on duties and rights. Individuals have a right to privacy that should not be violated even if doing so would produce better aggregate health outcomes.
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Virtue Ethics}: Emphasizes the character of those who design and deploy AI systems. Public health practitioners should embody virtues of integrity, transparency, and accountability.
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Principlism}: The dominant framework in bioethics, balancing four principles: autonomy, beneficence, non-maleficence, and justice. This framework has been extended to address the unique challenges of AI in health contexts.
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+\node[draw,rounded rectangle,fill=blue!20,minimum width=2.5cm,minimum height=1cm] (A) at (0,1.5) {Autonomy};
+\node[draw,rounded rectangle,fill=green!20,minimum width=2.5cm,minimum height=1cm] (B) at (2.5,0) {Beneficence};
+\node[draw,rounded rectangle,fill=red!20,minimum width=2.5cm,minimum height=1cm] (C) at (-2.5,0) {Non-maleficence};
+\node[draw,rounded rectangle,fill=yellow!20,minimum width=2.5cm,minimum height=1cm] (D) at (0,-1.5) {Justice};
+\node[draw,ellipse,fill=purple!10,minimum width=4cm,minimum height=3cm] (E) at (0,0) {AI Ethics in\\Public Health};
+\draw[->,thick] (A) -- (E);
+\draw[->,thick] (B) -- (E);
+\draw[->,thick] (C) -- (E);
+\draw[->,thick] (D) -- (E);
+\end{tikzpicture}
+\end{center}
+\end{frame}
+\section{Methods and Ethical Governance}
+\begin{frame}{Methodology: Ethical Impact Assessment for AI Systems}
+Before deploying AI-based surveillance systems, public health authorities should conduct a systematic ethical impact assessment:
+
+\begin{enumerate}
+\item \textbf{Data Inventory and Risk Mapping}: Catalog all data sources, assess sensitivity levels, and identify potential privacy risks to individuals and communities.
+
+\item \textbf{Algorithmic Fairness Analysis}: Evaluate model performance across demographic subgroups to identify potential disparate impacts. Calculate statistical parity, equal opportunity differences, and calibration across protected attributes.
+
+\item \textbf{Benefit-Risk Analysis}: Quantify expected health benefits (earlier outbreak detection, more efficient resource allocation) against potential harms (privacy violations, discrimination, chilling effects on healthcare-seeking behavior).
+
+\item \ stakeholder Engagement}: Involve affected communities in the design process, particularly marginalized groups who may bear disproportionate risks.
+
+\item \textbf{Governance Structure Design}: Establish clear accountability structures, appeals mechanisms, and sunset provisions for AI system use.
+\end{enumerate}
+
+The European Commission's Assessment List for Trustworthy AI (ALTAI) provides a comprehensive checklist adapted for public health contexts.
+\end{frame}
+\begin{frame}{Addressing Algorithmic Bias in Health Surveillance}
+Algorithmic bias can manifest in multiple ways in public health AI systems:
+
+\begin{itemize}
+\item \textbf{Historical Bias}: Surveillance models trained on historical data may encode past inequities in healthcare access and reporting. For example, if malaria surveillance data underrepresents rural populations, models will perform poorly in these areas.
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Representation Bias}: Training data may not adequately represent all population subgroups. If wearable device data comes predominantly from urban, higher-income populations, syndromic surveillance models may miss emerging outbreaks in underserved communities.
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Measurement Bias}: Different measurement approaches for different groups can introduce systematic errors. Laboratory-confirmed case data may be available for some populations while others are classified based on clinical symptoms only.
+\end{itemize}
+
+Mathematical representation of group-specific performance disparities:
+\[
+\Delta_{\text{accuracy}} = |\text{Accuracy}_{\text{group A}} - \text{Accuracy}_{\text{group B}}|
+\]
+Ethical AI systems should demonstrate $\Delta_{\text{accuracy}} < \epsilon$ where $\epsilon$ is a predefined fairness threshold, typically set at 0.05 or 5 percentage points.
+\end{frame}
+\section{Application Examples}
+\begin{frame}{Case Study: COVID-19 Contact Tracing Apps}
+During the COVID-19 pandemic, numerous countries deployed AI-enhanced contact tracing applications. Ethical analysis reveals complex tradeoffs:
+
+\begin{center}
+\scalebox{0.8}{
+\begin{tabular}{@{}lp{3cm}p{3cm}p{3cm}@{}}
+\toprule
+\textbf{Country} & \textbf{Data Architecture} & \textbf{Ethical Safeguards} & \textbf{Controversies} \\
+\midrule
+UK (NHSX) & Centralized matching & Data protection impact assessment, limited retention & Privacy concerns, low adoption \\
+Germany (Corona-Warn) & Decentralized (DP-3T) & Open-source code, voluntary participation & Initial centralization plans criticized \\
+Kenya (Maaisha) & Bluetooth + GPS & Community consent mechanisms & Digital divide concerns \\
+Singapore (TraceTogether) & Bluetooth proximity & Legislative protections for data use & Enforcement controversy \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+The Kenyan Maaisha app illustrates LMIC-specific ethical considerations: lower smartphone penetration meant the app could only reach urban populations, potentially creating surveillance gaps that could exacerbate health inequities. Community health workers were trained to explain the app in local languages, addressing the consent challenge posed by low literacy rates in some regions.
+\end{frame}
+\begin{frame}{Case Study: Predictive Policing of Disease Outbreaks}
+Several African countries have piloted AI-based predictive systems for disease outbreak forecasting. The Democratic Republic of Congo's Ebola surveillance system provides instructive lessons:
+
+\begin{itemize}
+\item \textbf{Benefits}: Machine learning models incorporating mobility data, historical outbreak patterns, and climate variables predicted high-risk zones with 72\% accuracy, enabling targeted vaccination campaigns.
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Ethical Concerns}: Community members in predicted high-risk areas reported feeling "targeted" and stigmatized. Some areas avoided reporting suspected cases to prevent being labeled as outbreak zones.
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Intervention}: Local ethicists worked with the surveillance team to redesign communication strategies. Instead of announcing "this area is at high risk," messaging shifted to "resources are being deployed to protect your community."
+\end{itemize}
+
+This case demonstrates that ethical AI deployment requires ongoing community engagement and willingness to modify systems based on feedback. The technical performance metrics (accuracy, AUC) must be balanced against community acceptance and trust.
+\end{frame}
+\section{LMIC Context: Sub-Saharan Africa}
+\begin{frame}{Unique Ethical Challenges in African Public Health AI}
+AI deployment in Sub-Saharan Africa raises region-specific ethical considerations that differ from high-income country contexts:
+
+\begin{itemize}
+\item \textbf{Colonial Data Legacy}: Historical extraction of African health data for research without local benefit creates legitimate distrust. Ethical AI must ensure data sovereignty and local capacity building.
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Digital Divide}: Lower smartphone penetration and internet connectivity mean AI systems may exclude rural populations from surveillance and benefits. Systems must be designed for multiple technology tiers.
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Health Workforce Implications}: AI may deskill health workers if over-relied upon, or may create new dependencies on external technical expertise. Training and capacity building must accompany deployment.
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Regulatory Capacity}: Many African nations lack robust AI governance frameworks. The African Union's Continental AI Strategy (2024) aims to address this through regional coordination and standards development.
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+\node[draw,rectangle,rounded corners,fill=green!20,minimum width=1.5cm,minimum height=0.8cm] at (0,0) {Data};
+\node[draw,rectangle,rounded corners,fill=blue!20,minimum width=1.5cm,minimum height=0.8cm] at (2,0) {Algorithm};
+\node[draw,rectangle,rounded corners,fill=red!20,minimum width=1.5cm,minimum height=0.8cm] at (4,0) {Deployment};
+\node[draw,rectangle,rounded corners,fill=yellow!20,minimum width=1.5cm,minimum height=0.8cm] at (6,0) {Governance};
+\draw[->,thick] (0,0.5) -- (0,1.5) -- (2,1.5) -- (2,0.5);
+\draw[->,thick] (2,0.5) -- (2,1.5) -- (4,1.5) -- (4,0.5);
+\draw[->,thick] (4,0.5) -- (4,1.5) -- (6,1.5) -- (6,0.5);
+\node[draw,rectangle,fill=gray!20,minimum width=9cm,minimum height=0.6cm] at (3,-1.2) {Ethical Review at Each Stage};
+\end{tikzpicture}
+\end{center}
+\end{frame}
+\begin{frame}{Building Ethical AI Capacity in Africa}
+Several initiatives are advancing ethical AI for health in Africa:
+
+\begin{itemize}
+\item \textbf{African Centre for Technology Studies (ACTS)}: Developing AI governance frameworks tailored to African legal traditions and values, emphasizing community rather than individual consent models where culturally appropriate.
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{WHO AFRO AI Hub}: Regional office has established guidelines for AI deployment that prioritize local validation, capacity building, and sustainable maintenance of AI systems.
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Data for Development (D4D) Ethics Framework}: Research initiative establishing principles for using mobile phone data in health research, balancing scientific value with privacy protection.
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{UNESCO Recommendation on AI Ethics}: Adopted by African member states, this framework emphasizes human rights, environmental sustainability, and inclusive development as core AI ethics principles.
+\end{itemize}
+
+Recommendations for ethical AI implementation in African public health institutions include establishing institutional review boards with AI expertise, developing national AI ethics guidelines aligned with regional frameworks, and investing in local AI talent to reduce dependence on external expertise.
+\end{frame}
+\section{Summary}
+\begin{frame}{Key Takeaways}
+\begin{enumerate}
+\item AI ethics for public health surveillance requires balancing population health benefits against individual rights to privacy and protection from algorithmic discrimination.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+\item Ethical impact assessments should precede AI deployment, examining data sources, algorithmic fairness, and potential for disparate impacts across population groups.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+\item LMIC contexts present unique ethical challenges including colonial data legacy, digital divides, and limited regulatory capacity that require tailored governance approaches.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+\item Community engagement is essential throughout the AI lifecycle, not just at deployment, to ensure systems serve the populations they are intended to protect.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+\item Regional initiatives such as the African Union AI Strategy and WHO AFRO guidelines provide frameworks for ethical AI governance adapted to African contexts.
+\end{enumerate}
+
+\begin{center}
+\textbf{Questions for Further Discussion}
+\end{center}
+
+How should public health authorities balance the urgent need for pandemic preparedness surveillance with long-term community trust? What mechanisms can ensure that AI systems developed during emergencies do not become permanent surveillance infrastructure that disproportionately affects marginalized communities?
+\end{frame}
+\end{document}

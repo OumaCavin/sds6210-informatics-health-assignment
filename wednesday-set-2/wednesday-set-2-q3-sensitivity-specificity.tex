@@ -1,0 +1,295 @@
+\documentclass[9pt,xcolor=dvipsnames,aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,graphicx,tikz,pgfplots,booktabs,siunitx}
+\usetikzlibrary{arrows,shapes,decorations.pathmorphing,decorations.pathreplacing,decorations.snapping,fit,positioning,calc,intersections,shapes.geometric,backgrounds}
+\usetheme[numbering=fraction,titleformat=smallcaps,sectionpage=progressbar]{metropolis}
+\usepackage[style=authoryear]{biblatex}
+\addbibresource{references.bib}
+\setbeamertemplate{bibliography item}[text]
+\graphicspath{{../assets/}}
+\DeclareMathOperator{\e}{e}
+\title{\Large SDS6210: Informatics for Health\\[0.3em]\small Wednesday Set 2, Q3: Sensitivity, Specificity, and Diagnostic Accuracy}
+\author{\textbf{Cavin Otieno}}
+\institute{MSc Public Health Data Science\\Department of Health Informatics}
+\date{\today}
+\begin{document}
+\begin{frame}[noframenumbering,plain]
+    \maketitleslide
+\end{frame}
+\section{Definition and Theoretical Framework}
+\begin{frame}{Definition: Sensitivity and Specificity}
+Sensitivity and specificity are fundamental measures of diagnostic test accuracy that characterize how well a test distinguishes between individuals with and without a target condition. These measures are properties of the test itself and remain constant regardless of the population prevalence of the disease.
+
+Sensitivity (True Positive Rate) measures the proportion of actual positive cases that are correctly identified by the test:
+\[
+\text{Sensitivity} = \frac{\text{True Positives (TP)}}{\text{True Positives (TP)} + \text{False Negatives (FN)}} = P(\text{Test}+|\text{Disease}+)
+\]
+
+Specificity (True Negative Rate) measures the proportion of actual negative cases that are correctly identified by the test:
+\[
+\text{Specificity} = \frac{\text{True Negatives (TN)}}{\text{True Negatives (TN)} + \text{False Positives (FP)}} = P(\text{Test}-|\text{Disease}-)
+\]
+
+These measures are calculated from a 2×2 contingency table that cross-classifies test results against the gold standard disease status. They form the basis for understanding test performance and selecting appropriate thresholds for clinical use.
+\end{frame}
+\begin{frame}{Theoretical Framework: The Confusion Matrix}
+The confusion matrix (also called contingency table or error matrix) provides the foundation for understanding diagnostic accuracy:
+
+\begin{center}
+\begin{tikzpicture}[scale=1]
+\node[draw,rectangle,minimum width=3cm,minimum height=2cm] (TL) at (0,1) {};
+\node[draw,rectangle,minimum width=3cm,minimum height=2cm] (TR) at (3,1) {};
+\node[draw,rectangle,minimum width=3cm,minimum height=2cm] (BL) at (0,-1) {};
+\node[draw,rectangle,minimum width=3cm,minimum height=2cm] (BR) at (3,-1) {};
+\node at (1.5,2.3) {\textbf{Disease Status}};
+\node at (-1.5,0) {\textbf{Test Result}};
+\node at (1.5,1) {\textbf{TP}\\$a$};
+\node at (4.5,1) {\textbf{FN}\\$b$};
+\node at (1.5,-1) {\textbf{FP}\\$c$};
+\node at (4.5,-1) {\textbf{TN}\\$d$};
+\node[draw,rectangle,rounded corners,fill=blue!10,minimum width=8cm,minimum height=0.6cm] at (1.5,-2.5) {Sensitivity = $a/(a+b)$, Specificity = $d/(c+d)$, Accuracy = $(a+d)/(a+b+c+d)$};
+\end{tikzpicture}
+\end{center}
+
+The confusion matrix terminology and measures:
+\begin{center}
+\scalebox{0.8}{
+\begin{tabular}{@{}llp{4cm}@{}}
+\toprule
+\textbf{Measure} & \textbf{Formula} & \textbf{Clinical Interpretation} \\
+\midrowcolor
+Sensitivity & $TP/(TP+FN)$ & Probability test positive given disease present \\
+Specificity & $TN/(TN+FP)$ & Probability test negative given disease absent \\
+PPV & $TP/(TP+FP)$ & Probability disease present given test positive \\
+NPV & $TN/(FN+TN)$ & Probability disease absent given test negative \\
+LR+ & Sens/(1-Spec) & Odds of disease if test positive vs negative \\
+LR- & (1-Sens)/Spec & Odds of disease if test negative vs positive \\
+\bottomrule
+\end{tabular}}
+\end{center}
+\end{frame}
+\section{Derived Measures and Clinical Application}
+\begin{frame}{Positive and Negative Predictive Values}
+While sensitivity and specificity are test characteristics, Positive Predictive Value (PPV) and Negative Predictive Value (NPV) are clinically-oriented measures that depend on disease prevalence:
+
+\[
+\text{PPV} = \frac{\text{Sensitivity} \times \text{Prevalence}}{\text{Sensitivity} \times \text{Prevalence} + (1 - \text{Specificity}) \times (1 - \text{Prevalence})}
+\]
+
+\[
+\text{NPV} = \frac{\text{Specificity} \times (1 - \text{Prevalence})}{(1 - \text{Sensitivity}) \times \text{Prevalence} + \text{Specificity} \times (1 - \text{Prevalence})}
+\]
+
+The relationship between predictive values and prevalence is illustrated below:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+\begin{axis}[
+    axis lines=middle,
+    xlabel={Prevalence},
+    ylabel={Predictive Value},
+    xmin=0, xmax=1,
+    ymin=0, ymax=1,
+    legend pos=south east,
+    width=0.7\textwidth,
+    height=0.5\textwidth,
+    domain=0.01:0.99
+]
+\addplot[blue,thick,samples=200] {(0.85*x)/(0.85*x + (1-0.90)*(1-x))};
+\addlegendentry{PPV (Sens=0.85, Spec=0.90)}
+\addplot[red,thick,samples=200] {(0.90*(1-x))/((1-0.85)*x + 0.90*(1-x))};
+\addlegendentry{NPV (Sens=0.85, Spec=0.90)}
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+This figure demonstrates that PPV increases with prevalence while NPV decreases, highlighting why diagnostic interpretation must account for local disease epidemiology.
+\end{frame}
+\begin{frame}{Likelihood Ratios and Clinical Reasoning}
+Likelihood ratios express how much a test result changes the odds of disease and are useful for updating pre-test probabilities:
+
+\[
+\text{Positive Likelihood Ratio (LR+)} = \frac{\text{Sensitivity}}{1 - \text{Specificity}}
+\]
+
+\[
+\text{Negative Likelihood Ratio (LR-)} = \frac{1 - \text{Sensitivity}}{\text{Specificity}}
+\]
+
+Interpretation guidelines for likelihood ratios:
+\begin{center}
+\scalebox{0.8}{
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{LR+} & \textbf{LR-} & \textbf{Clinical Utility} \\
+\midrowcolor
+>10 & <0.1 & Large change in probability (confirmation/discrimination) \\
+5-10 & 0.1-0.2 & Moderate change in probability (useful) \\
+2-5 & 0.2-0.5 & Small change in probability (limited) \\
+1-2 & 0.5-1.0 & Minimal change (test not useful) \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Using Bayes' theorem with pre-test odds:
+\[
+\text{Post-test Odds} = \text{Pre-test Odds} \times \text{LR}
+\]
+
+Example: If pre-test probability of malaria is 30\% (odds = 0.43) and LR+ = 5.0, then post-test odds = 0.43 × 5 = 2.15, corresponding to post-test probability of 68\%.
+\end{frame}
+\section{Application Examples}
+\begin{frame}{Example: Malaria Rapid Diagnostic Test Validation}
+Consider the validation of a malaria RDT against PCR microscopy in a Kenyan district hospital:
+
+\begin{center}
+\scalebox{0.8}{
+\begin{tabular}{@{}lccc@{}}
+\toprule
+& \textbf{PCR Positive} & \textbf{PCR Negative} & \textbf{Total} \\
+\midrowcolor
+RDT Positive & 185 & 42 & 227 \\
+RDT Negative & 15 & 158 & 173 \\
+\textbf{Total} & 200 & 200 & 400 \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Calculate the accuracy measures:
+\begin{align*}
+\text{Sensitivity} &= \frac{185}{185 + 15} = \frac{185}{200} = 0.925 \\
+\text{Specificity} &= \frac{158}{158 + 42} = \frac{158}{200} = 0.790 \\
+\text{PPV} &= \frac{185}{185 + 42} = \frac{185}{227} = 0.815 \\
+\text{NPV} &= \frac{158}{158 + 15} = \frac{158}{173} = 0.913 \\
+\text{LR+} &= \frac{0.925}{1 - 0.790} = \frac{0.925}{0.210} = 4.40 \\
+\text{Accuracy} &= \frac{185 + 158}{400} = 0.858
+\end{align*}
+\end{frame}
+\begin{frame}{Example: Bayesian Update with Prevalence}
+If the same test is used in a different setting with different malaria prevalence:
+
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Setting} & \textbf{Prevalence} & \textbf{PPV} & \textbf{NPV} \\
+\midrowcolor
+High transmission (20\%) & 0.20 & 0.51 & 0.97 \\
+Medium transmission (10\%) & 0.10 & 0.32 & 0.98 \\
+Low transmission (2\%) & 0.02 & 0.09 & 0.996 \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+This example illustrates that even a test with good sensitivity (92.5\%) and specificity (79.0\%) has poor PPV (9\%) in low prevalence settings. Clinicians must interpret test results in the context of local epidemiology.
+
+For the low prevalence setting (2\%):
+\[
+\text{PPV} = \frac{0.925 \times 0.02}{0.925 \times 0.02 + 0.21 \times 0.98} = \frac{0.0185}{0.0185 + 0.2058} = 0.082
+\]
+
+The low PPV means that most positive results in this setting are false positives, highlighting the importance of confirmatory testing and clinical correlation.
+\end{frame}
+\section{LMIC Context: Sub-Saharan Africa}
+\begin{frame}{Diagnostic Test Evaluation in Resource-Limited Settings}
+The evaluation and implementation of diagnostic tests in Sub-Saharan Africa requires attention to unique operational considerations:
+
+\begin{center}
+\scalebox{0.7}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Consideration} & \textbf{Impact on Evaluation} & \textbf{Recommended Approach} \\
+\midrowcolor
+Reference Standard Access & Gold standard may be unavailable locally & Use alternative standards with acknowledged limitations, sensitivity analysis \\
+Spectrum Bias & Disease severity differs from validation studies & Stratified analysis by disease severity, symptom presentation \\
+Verification Bias & Not all patients receive reference standard & Imputation methods, selective verification analysis \\
+Sample Size & Limited patient volumes at peripheral facilities & Multi-site studies, meta-analysis of site-level data \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+The STARD (Standards for Reporting Diagnostic Accuracy Studies) 2015 guidelines provide a framework for comprehensive diagnostic accuracy reporting adapted for LMIC contexts. Key elements include:
+\begin{itemize}
+\item Clear description of the clinical setting and population
+\end{itemize}
+
+\begin{itemize}
+\item Detailed characterization of the index test and reference standard
+\end{itemize}
+
+\begin{itemize}
+\item Handling of indeterminate results and missing data
+\end{itemize}
+
+\begin{itemize}
+\item Reporting of adverse events related to testing
+\end{itemize}
+\end{frame}
+\begin{frame}{Case Study: HIV Testing Algorithms in Africa}
+The evolution of HIV testing algorithms in Africa demonstrates the application of sensitivity and specificity principles:
+
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Algorithm} & \textbf{Tests} & \textbf{Characteristics} \\
+\midrowcolor
+Serial (WHO) & 3 rapid tests & High specificity, minimal false positives \\
+Parallel & 2 rapid tests simultaneously & Higher sensitivity, requires confirmatory testing \\
+Laboratory-based & ELISA + Western blot & Gold standard, limited resource availability \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+The WHO-recommended serial algorithm (Determine → Stat-Pak → Uni-Gold) achieves:
+\begin{itemize}
+\item Sensitivity: >99.9\% (all three tests must be positive)
+\end{itemize}
+
+\begin{itemize}
+\item Specificity: >99.7\% (two concordant positives required)
+\end{itemize}
+
+The mathematical basis for serial testing:
+\[
+\text{Sensitivity}_{\text{serial}} = \text{Sens}_1 \times \text{Sens}_2 \times \text{Sens}_3
+\]
+\[
+\text{Specificity}_{\text{serial}} = 1 - (1 - \text{Spec}_1) \times (1 - \text{Spec}_2) \times (1 - \text{Spec}_3)
+\]
+
+This approach minimizes false positives while maintaining high sensitivity, critical for maximizing the benefit of life-long antiretroviral therapy.
+\end{frame}
+\section{Summary}
+\begin{frame}{Key Takeaways}
+\begin{enumerate}
+1. Sensitivity and specificity are test properties independent of disease prevalence, while PPV and NPV depend critically on local prevalence rates.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+2. Likelihood ratios provide the mathematical bridge between test results and clinical probability estimation, enabling Bayesian updating of diagnostic confidence.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+3. Even tests with excellent sensitivity and specificity can perform poorly in low prevalence settings where false positives may outnumber true positives.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+4. LMIC diagnostic evaluation requires attention to reference standard availability, spectrum bias, and operational constraints that differ from high-resource settings.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+5. Serial testing algorithms for HIV demonstrate how multiple imperfect tests can be combined to achieve high accuracy suitable for programmatic implementation.
+\end{enumerate}
+
+\begin{center}
+\textbf{Questions for Further Discussion}
+\end{center}
+
+How should diagnostic test performance be evaluated and reported when the gold standard reference test is not available locally? What thresholds for sensitivity and specificity are appropriate for different clinical scenarios (screening vs. confirmation)?
+\end{frame}
+\end{document}

@@ -1,0 +1,284 @@
+\documentclass[9pt,xcolor=dvipsnames,aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,graphicx,tikz,pgfplots,booktabs,siunitx}
+\usetikzlibrary{arrows,shapes,decorations.pathmorphing,decorations.pathreplacing,decorations.snapping,fit,positioning,calc,intersections,shapes.geometric,backgrounds}
+\usetheme[numbering=fraction,titleformat=smallcaps,sectionpage=progressbar]{metropolis}
+\usepackage[style=authoryear]{biblatex}
+\addbibresource{references.bib}
+\setbeamertemplate{bibliography item}[text]
+\graphicspath{{../assets/}}
+\DeclareMathOperator{\e}{e}
+\title{\Large SDS6210: Informatics for Health\\[0.3em]\small Tuesday Set 2, Q4: APIs in Health Information Exchange}
+\author{\textbf{Cavin Otieno}}
+\institute{MSc Public Health Data Science\\Department of Health Informatics}
+\date{\today}
+\begin{document}
+\begin{frame}[noframenumbering,plain]
+    \maketitleslide
+\end{frame}
+\section{Definition and Theoretical Framework}
+\begin{frame}{Definition: Application Programming Interfaces (APIs)}
+An Application Programming Interface (API) is a set of protocols, definitions, and tools that enables different software applications to communicate and share data with each other. In health informatics, APIs serve as the technical bridge that allows disparate information systems to exchange clinical, administrative, and public health data in a standardized manner.
+
+APIs abstract the internal complexity of systems, exposing only the necessary functionality to external applications through well-defined interfaces. This modularity enables:
+\begin{itemize}
+\item \textbf{System Interoperability}: Different health IT systems can exchange and use information regardless of their underlying technology platforms
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Application Composition}: New applications can be built by composing functionality from multiple existing systems
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Innovation Ecosystems}: Third-party developers can create applications that extend the value of existing health data systems
+\end{itemize}
+
+The evolution from point-to-point interface integration to API-based exchange represents a fundamental shift in health IT architecture, enabling more flexible, scalable, and sustainable interoperability.
+\end{frame}
+\begin{frame}{Theoretical Framework: Interoperability Standards and APIs}
+The theoretical foundation for health APIs rests on established interoperability frameworks and emerging standards:
+
+\begin{center}
+\scalebox{0.7}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Standard} & \textbf{Type} & \textbf{Application} \\
+\midrule
+HL7 v2.x & Messaging standard & Legacy system integration, lab results exchange \\
+HL7 FHIR & Modern API standard & Contemporary web-based health data exchange \\
+SMART on FHIR & Authorization framework & Third-party app authorization and launch \\
+IHE XDS & Document sharing & Cross-enterprise document exchange \\
+DICOM & Imaging standard & Medical imaging storage and retrieval \\
+HL7 CDA & Document standard & Structured clinical documents \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+The SMART (Substitutable Medical Apps and Reusable Technologies) on FHIR framework provides the authorization and authentication layer that enables secure data sharing. It implements OAuth 2.0-based authorization flows that allow patients and providers to grant specific permissions to third-party applications while maintaining control over their data.
+
+The API economy in healthcare builds on these standards to create ecosystems of interoperable applications that can be substituted and combined, analogous to how smartphone app ecosystems function.
+\end{frame}
+\section{Methods and Implementation}
+\begin{frame}{Methodology: Designing Health APIs}
+Designing effective health APIs requires attention to functional, security, and operational requirements:
+
+\begin{enumerate}
+\item \textbf{Data Modeling}: Map clinical concepts to standard terminologies (SNOMED CT, ICD-10, LOINC) and resource representations (FHIR resources such as Patient, Observation, Condition)
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+\item \textbf{Resource Design}: Define API endpoints following RESTful principles (or SOAP for legacy systems) with consistent naming conventions, HTTP methods, and response formats
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+\item \textbf{Security Implementation}: Implement authentication (OAuth 2.0, SMART on FHIR), authorization (scopes, roles), encryption (TLS 1.3), and audit logging
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+\item \textbf{Versioning Strategy}: Plan for API evolution without breaking existing consumers through semantic versioning and deprecation policies
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+\item \textbf{Documentation}: Provide comprehensive API documentation, code examples, and sandbox testing environments for developers
+\end{enumerate}
+
+RESTful API design for health data follows these URL patterns:
+\begin{center}
+\begin{semiverbatim}
+GET /api/v1/Patient/{id}        # Retrieve patient resource
+POST /api/v1/Observation        # Create new observation
+PUT /api/v1/Condition/{id}      # Update condition
+GET /api/v1/Encounter?patient=123  # Search encounters
+\end{semiverbatim}
+\end{center}
+\end{frame}
+\begin{frame}{FHIR Resource Model and API Operations}
+FHIR (Fast Healthcare Interoperability Resources) provides the modern standard for health API design:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+\node[draw,rectangle,rounded corners,fill=blue!20,minimum width=1.8cm,minimum height=1cm] (P) at (0,0) {Patient};
+\node[draw,rectangle,rounded corners,fill=green!20,minimum width=1.8cm,minimum height=1cm] (O) at (3,0) {Observation};
+\node[draw,rectangle,rounded corners,fill=red!20,minimum width=1.8cm,minimum height=1cm] (M) at (6,0) {Medication};
+\node[draw,rectangle,rounded corners,fill=yellow!20,minimum width=1.8cm,minimum height=1cm] (C) at (9,0) {Condition};
+\draw[->,thick] (P) -- (O) node[midway,above] {subject};
+\draw[->,thick] (P) -- (M) node[midway,above] {subject};
+\draw[->,thick] (P) -- (C) node[midway,above] {subject};
+\node[draw,rectangle,rounded corners,fill=purple!20,minimum width=10cm,minimum height=0.8cm] at (4.5,-1.5) {Common API Operations: create, read, update, delete, search, history};
+\end{tikzpicture}
+\end{center}
+
+Each FHIR resource has a standard structure:
+\begin{center}
+\begin{semiverbatim}
+\{
+  "resourceType": "Patient",
+  "id": "example",
+  "meta": { "versionId": "1", "lastUpdated": "2024-01-15" },
+  "identifier": [{ "system": "urn:oid:2.16.840.1.113883.4.1", "value": "123-45-6789" }],
+  "name": [{ "family": "Chimwemwe", "given": ["Aisha"] }],
+  "gender": "female",
+  "birthDate": "1990-01-15"
+\}
+\end{semiverbatim}
+\end{center}
+
+The \texttt{meta} element enables resource versioning and audit tracking, essential for clinical data integrity and regulatory compliance.
+\end{frame}
+\section{Application Examples}
+\begin{frame}{Example: National Health Information Exchange}
+Consider a national health information exchange (HIE) connecting regional health information networks:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+\node[draw,rectangle,fill=blue!20,minimum width=2cm,minimum height=1cm] (H) at (0,2) {Hospitals};
+\node[draw,rectangle,fill=green!20,minimum width=2cm,minimum height=1cm] (P) at (4,2) {Primary Care};
+\node[draw,rectangle,fill=red!20,minimum width=2cm,minimum height=1cm] (L) at (8,2) {Laboratories};
+\node[draw,rectangle,fill=yellow!20,minimum width=2cm,minimum height=1cm] (Ph) at (0,-1) {Pharmacies};
+\node[draw,rectangle,fill=purple!20,minimum width=2cm,minimum height=1cm] (PH) at (4,-1) {Public Health};
+\node[draw,rectangle,fill=orange!20,minimum width=2cm,minimum height=1cm] (GW) at (4,0.5) {API Gateway};
+\node[draw,ellipse,fill=gray!20,minimum width=3cm,minimum height=2cm] (C) at (8,-1) {Clinical\\Data\\Repository};
+\draw[->,thick] (H) -- (GW);
+\draw[->,thick] (P) -- (GW);
+\draw[->,thick] (L) -- (GW);
+\draw[->,thick] (Ph) -- (GW);
+\draw[->,thick] (PH) -- (GW);
+\draw[->,thick] (GW) -- (C);
+\draw[->,thick,dashed] (C) -- (8,1) -- (4,1) -- (P);
+\end{tikzpicture}
+\end{center}
+
+The API gateway handles:
+\begin{itemize}
+\item Request routing and load balancing
+\item Authentication verification and token issuance
+\item Rate limiting and throttling
+\item Request/response transformation between different API versions
+\end{itemize}
+
+Clinical queries use standard FHIR search parameters:
+\begin{center}
+\begin{semiverbatim}
+GET /api/v1/Patient?name=Mutua&_include=Observation.subject
+GET /api/v1/Encounter?patient=123&date=ge2024-01-01
+\end{semiverbatim}
+\end{center}
+\end{frame}
+\begin{frame}{Example: Mobile Health Application Integration}
+A mobile application for chronic disease management connects to hospital EHR systems via FHIR APIs:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.7]
+\node[draw,rectangle,fill=blue!20,minimum width=2cm,minimum height=1.2cm] (M) at (0,1) {Mobile App};
+\node[draw,rectangle,fill=green!20,minimum width=2cm,minimum height=1.2cm] (API) at (4,1) {SMART on FHIR};
+\node[draw,rectangle,fill=red!20,minimum width=2cm,minimum height=1.2cm] (E) at (8,1) {EHR System};
+\node[draw,rectangle,fill=yellow!20,minimum width=2cm,minimum height=1.2cm] (C) at (0,-2) {Care Team};
+\node[draw,rectangle,fill=purple!20,minimum width=2cm,minimum height=1.2cm] (P) at (8,-2) {Patient};
+\draw[->,thick] (M) -- (API) node[midway,above] {OAuth 2.0};
+\draw[->,thick] (API) -- (E) node[midway,above] {FHIR REST API};
+\draw[<->,thick] (C) -- (M) node[midway,left] {Care coordination};
+\draw[<->,thick] (P) -- (E) node[midway,right] {Clinical visits};
+\node[draw,rectangle,fill=gray!20,minimum width=10cm,minimum height=0.6cm] at (4,-3.2) {App requests: patient.read, observation.read, observation.write};
+\end{tikzpicture}
+\end{center}
+
+The application flow:
+\begin{enumerate}
+1. Patient launches app and authenticates via SMART on FHIR launch sequence
+2. App requests specific data scopes (e.g., read Observations, write CarePlan)
+3. Patient approves data sharing through EHR interface
+4. App receives access token and retrieves patient data via FHIR API
+5. App stores patient-generated health data back to EHR as Observations
+6. Care team receives alerts and can review patient data during visits
+\end{enumerate}
+\end{frame}
+\section{LMIC Context: Sub-Saharan Africa}
+\begin{frame}{API Implementation Challenges in African Health Systems}
+The implementation of API-based health information exchange in Sub-Saharan Africa faces unique challenges:
+
+\begin{center}
+\scalebox{0.7}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Challenge} & \textbf{Impact} & \textbf{Mitigation Strategy} \\
+\midrowcolor
+Legacy System Prevalence & Limited modern APIs on existing systems & API wrapper/gateway patterns, legacy modernization \\
+Infrastructure Constraints & Reduced API availability, performance issues & Offline-capable apps, batch synchronization \\
+Limited Developer Ecosystem & Fewer developers to build API clients & Open-source SDKs, developer training programs \\
+Terminology Fragmentation & Inconsistent coding across facilities & National terminology standards, mapping services \\
+Governance Capacity & Unclear data sharing agreements & Regional frameworks, data sovereignty policies \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+The OpenHIE (Open Health Information Exchange) community has developed reference architectures for health information exchange in resource-constrained settings. These include the Health Information Mediator (HIM) pattern that normalizes terminology and protocols across disparate systems.
+
+Kenya's Health Information Exchange (KHIE) pilot program has demonstrated the feasibility of API-based exchange, connecting over 200 health facilities through FHIR-compliant interfaces while accommodating facilities using legacy HMIS systems through adaptor layers.
+\end{frame}
+\begin{frame}{Case Study: African CDC Continental Surveillance API}
+The Africa CDC established a continental surveillance platform connecting National Public Health Institutes across member states:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+\node[draw,rectangle,fill=blue!20,minimum width=1.5cm,minimum height=1cm] (N) at (0,1) {Nigeria CDC};
+\node[draw,rectangle,fill=green!20,minimum width=1.5cm,minimum height=1cm] (K) at (2.5,1) {Kenya MoH};
+\node[draw,rectangle,fill=red!20,minimum width=1.5cm,minimum height=1cm] (SA) at (5,1) {South Africa NICD};
+\node[draw,rectangle,fill=yellow!20,minimum width=1.5cm,minimum height=1cm] (G) at (7.5,1) {Ghana GHS};
+\node[draw,rectangle,fill=purple!20,minimum width=2cm,minimum height=1.2cm] (AC) at (4,-0.5) {Africa CDC\\API Gateway};
+\node[draw,rectangle,fill=orange!20,minimum width=2.5cm,minimum height=1.2cm] (DA) at (4,-2.2) {Continental\\Analytics Dashboard};
+\draw[->,thick] (N) -- (AC);
+\draw[->,thick] (K) -- (AC);
+\draw[->,thick] (SA) -- (AC);
+\draw[->,thick] (G) -- (AC);
+\draw[->,thick] (AC) -- (DA);
+\node[draw,rectangle,fill=gray!20,minimum width=10cm,minimum height=0.6cm] at (4,-3.2) {API endpoints: /syndromic, /lab-results, /outbreak-reports, /vaccination};
+\end{tikzpicture}
+\end{center}
+
+Key features of the continental API:
+\begin{itemize}
+\item Standardized event-based surveillance data submissions from member states
+\item Real-time alerting for cross-border disease spread detection
+\item Harmonized terminology through adoption of WHO International Health Regulations standards
+\item Automated report generation for emergency response coordination
+\end{itemize}
+
+The platform demonstrated its value during the 2024 mpox outbreak, enabling rapid sharing of case data across 12 affected African nations through standardized API interfaces.
+\end{frame}
+\section{Summary}
+\begin{frame}{Key Takeaways}
+\begin{enumerate}
+\item APIs enable health information exchange by providing standardized, programmatic interfaces between disparate information systems, supporting interoperability and data reuse.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+\item FHIR has become the dominant standard for modern health APIs, with SMART on FHIR providing the security and authorization framework for third-party application integration.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+Effective API design requires attention to resource modeling, RESTful conventions, security implementation, versioning strategies, and comprehensive developer documentation.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+4. In African health systems, API implementation must address legacy system integration, infrastructure constraints, and limited developer ecosystems through adapted architectural patterns.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+5. Continental initiatives like the Africa CDC surveillance platform demonstrate how API-based exchange can enhance regional public health coordination and emergency response.
+\end{enumerate}
+
+\begin{center}
+\textbf{Questions for Further Discussion}
+\end{center}
+
+How should health systems balance the benefits of open API ecosystems with the need to protect sensitive health information? What governance frameworks are appropriate for cross-border health data exchange in Africa?
+\end{frame}
+\end{document}

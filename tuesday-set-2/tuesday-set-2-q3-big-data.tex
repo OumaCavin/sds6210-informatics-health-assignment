@@ -1,0 +1,238 @@
+\documentclass[9pt,xcolor=dvipsnames,aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,graphicx,tikz,pgfplots,booktabs,siunitx}
+\usetikzlibrary{arrows,shapes,decorations.pathmorphing,decorations.pathreplacing,decorations.snapping,fit,positioning,calc,intersections,shapes.geometric,backgrounds}
+\usetheme[numbering=fraction,titleformat=smallcaps,sectionpage=progressbar]{metropolis}
+\usepackage[style=authoryear]{biblatex}
+\addbibresource{references.bib}
+\setbeamertemplate{bibliography item}[text]
+\graphicspath{{../assets/}}
+\DeclareMathOperator{\e}{e}
+\title{\Large SDS6210: Informatics for Health\\[0.3em]\small Tuesday Set 2, Q3: Big Data in Public Health}
+\author{\textbf{Cavin Otieno}}
+\institute{MSc Public Health Data Science\\Department of Health Informatics}
+\date{\today}
+\begin{document}
+\begin{frame}[noframenumbering,plain]
+    \maketitleslide
+\end{frame}
+\section{Definition and Theoretical Framework}
+\begin{frame}{Definition: Big Data in Public Health}
+Big data in public health refers to extremely large datasets that exceed the capacity of traditional database management tools to capture, store, manage, and analyze within reasonable time frames. The discipline leverages computational methods, statistical techniques, and machine learning algorithms to extract patterns, trends, and insights from these voluminous, high-velocity, and diverse data sources.
+
+The canonical characterization of big data uses the "5 V's" framework:
+\begin{itemize}
+\item \textbf{Volume}: The sheer quantity of data generated from multiple sources including electronic health records, social media, sensors, and genomic platforms
+\item \textbf{Velocity}: The speed at which data is generated and must be processed to enable real-time or near-real-time public health response
+\item \textbf{Variety}: The heterogeneity of data types including structured clinical data, unstructured clinical notes, imaging, genomic sequences, and spatial-temporal data
+\item \textbf{Veracity}: The quality, reliability, and trustworthiness of data from disparate sources with varying completeness and accuracy
+\item \textbf{Value}: The potential for generating actionable insights that improve population health outcomes
+\end{itemize}
+
+In the context of public health surveillance, big data enables the transition from reactive, periodic reporting to proactive, continuous monitoring of population health status.
+\end{frame}
+\begin{frame}{Theoretical Framework: Learning Health Systems and Big Data}
+The Learning Health System (LHS) framework provides the theoretical foundation for leveraging big data in public health. Envisioned by the Institute of Medicine (now National Academy of Medicine), the LHS concept describes a system in which:
+\begin{enumerate}
+\item Data generated during routine clinical care feeds into a continuous learning cycle
+2. Analytic methods extract actionable insights from accumulated data
+3. New knowledge is translated into improved clinical practices and public health policies
+4. The cycle repeats with increasingly refined interventions
+\end{enumerate}
+
+The mathematical representation of the LHS cycle can be expressed as a feedback system:
+\[
+\mathbf{D}_{t+1} = f(\mathbf{D}_t, \mathbf{I}_t, \mathbf{A}_t)
+\]
+where $\mathbf{D}$ represents the population health data at time $t$, $\mathbf{I}$ represents the interventions applied, and $\mathbf{A}$ represents the analytic outputs generated. Big data infrastructure enables this cycle to operate at scale and velocity previously impossible.
+
+The translational science of implementation research provides methods for moving from big data insights to real-world public health impact, addressing the persistent gap between what is known and what is practiced.
+\end{frame}
+\section{Methods and Technical Considerations}
+\begin{frame}{Methodology: Big Data Architecture for Public Health}
+Implementing big data systems for public health requires attention to multiple technical and organizational dimensions:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.7]
+\node[draw,rectangle,fill=blue!20,minimum width=3cm,minimum height=1cm] (A) at (0,2) {Data Sources};
+\node[draw,rectangle,fill=green!20,minimum width=3cm,minimum height=1cm] (B) at (4,2) {Data Lake};
+\node[draw,rectangle,fill=red!20,minimum width=3cm,minimum height=1cm] (C) at (8,2) {Analytics};
+\node[draw,rectangle,fill=yellow!20,minimum width=3cm,minimum height=1cm] (D) at (4,-1) {Insights Dashboard};
+\draw[->,thick] (A) -- (B) node[midway,above] {ETL/ELT};
+\draw[->,thick] (B) -- (C) node[midway,above] {Query};
+\draw[->,thick] (C) -- (D) node[midway,right] {Visualization};
+\draw[->,thick] (D) -- (4,1) -- (0,1.3) node[midway,below] {Feedback};
+\node[draw,rectangle,fill=gray!20,minimum width=10cm,minimum height=0.5cm] at (4,-2.5) {Governance Layer: Privacy, Access Control, Data Quality};
+\end{tikzpicture}
+\end{center}
+
+Key architectural considerations include:
+\begin{itemize}
+\item \textbf{Data Ingestion}: Batch versus stream processing based on latency requirements
+\item \textbf{Storage Technologies}: Data lakes using Hadoop Distributed File System (HDFS), cloud object storage, or time-series databases for surveillance data
+\item \textbf{Query Engines}: Apache Spark for distributed processing, Presto for interactive queries
+\item \textbf{Security**: Role-based access control, encryption at rest and in transit, audit logging
+\end{itemize}
+\end{frame}
+\begin{frame}{Data Quality Assessment in Big Data Systems}
+The veracity dimension of big data requires systematic quality assessment before analytics can yield reliable insights. Several metrics and methods apply:
+
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Dimension} & \textbf{Metric} & \textbf{Measurement} \\
+\midrule
+Completeness & Missingness rate & Proportion of null/missing values: $M = \frac{\sum_{i=1}^{n}\mathbb{1}(x_i = \text{NA})}{n}$ \\
+Accuracy & Validation against gold standard & Sensitivity, specificity, positive predictive value \\
+Timeliness & Currency of data & Time lag between event occurrence and availability \\
+Consistency & Cross-source agreement & Cohen's kappa, intraclass correlation \\
+Uniqueness & Duplicate records & Record linkage matching rate \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+For public health surveillance, data quality dashboards should monitor these metrics continuously. Automated alerts can trigger when quality metrics fall below acceptable thresholds:
+\[
+\text{Quality Score} = w_1 \cdot \text{Completeness} + w_2 \cdot \text{Accuracy} + w_3 \cdot \text{Timeliness} + w_4 \cdot \text{Consistency}
+\]
+where weights $w_i$ reflect the relative importance of each dimension for the specific use case.
+\end{frame}
+\section{Application Examples}
+\begin{frame}{Example: Global Health Trends from Google Search Data}
+Google Trends and Google Flu Trends (now discontinued but methodologically instructive) demonstrated both the potential and limitations of big data for public health surveillance:
+
+\begin{itemize}
+\item \textbf{Approach}: Analyzed search query volumes for influenza-related terms as a proxy for actual disease activity
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Initial Success}: Model predicted influenza-like illness rates 1-2 weeks ahead of CDC surveillance data with correlation coefficients exceeding 0.90
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Limitations}: Overestimated flu activity during the 2012-2013 season due to heightened media coverage of flu causing increased searches without actual disease increase
+\end{itemize}
+
+This case illustrates the importance of:
+\begin{itemize}
+\item Understanding the causal mechanisms linking search behavior to health outcomes
+\item Validating big data signals against traditional surveillance gold standards
+\item Acknowledging that correlations can be spurious or unstable over time
+\end{itemize}
+
+The lessons learned informed subsequent approaches including combining multiple data streams and incorporating uncertainty quantification into predictions.
+\end{frame}
+\begin{frame}{Example: Social Media Mining for Drug Safety}
+PharmaCovigilance systems leverage big data from social media to detect adverse drug reactions:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+\node[draw,rectangle,fill=blue!20,minimum width=2cm,minimum height=1.2cm] (A) at (0,0) {Social Media Posts};
+\node[draw,rectangle,fill=green!20,minimum width=2cm,minimum height=1.2cm] (B) at (3,0) {NLP Pipeline};
+\node[draw,rectangle,fill=red!20,minimum width=2cm,minimum height=1.2cm] (C) at (6,0) {Signal Detection};
+\node[draw,rectangle,fill=yellow!20,minimum width=2cm,minimum height=1.2cm] (D) at (9,0) {Regulatory Alert};
+\draw[->,thick] (A) -- (B) node[midway,above] {Text processing};
+\draw[->,thick] (B) -- (C) node[midway,above] {Disproportionality};
+\draw[->,thick] (C) -- (D) node[midway,above] {Case evaluation};
+\node[draw,rectangle,fill=gray!20,minimum width=10cm,minimum height=0.6cm] at (4.5,-1.8) {Disproportionality Reporting Ratio: $DRR = \frac{A/(A+B)}{C/(C+D)}$};
+\end{tikzpicture}
+\end{center}
+
+Natural Language Processing (NLP) extracts mentions of adverse events from posts, which are then aggregated and compared against expected rates using disproportionality statistics. Signals exceeding predefined thresholds trigger pharmacovigilance reviews.
+
+Challenges include distinguishing actual adverse events from expected symptoms, managing false positives from media coverage, and addressing the representativeness bias of social media users compared to the general population.
+\end{frame}
+\section{LMIC Context: Sub-Saharan Africa}
+\begin{frame}{Big Data Initiatives in African Public Health}
+Despite infrastructure challenges, several big data initiatives are advancing public health in Sub-Saharan Africa:
+
+\begin{center}
+\scalebox{0.7}{
+\begin{tabular}{@{}llp{4cm}p{3cm}@{}}
+\toprule
+\textbf{Initiative} & \textbf{Country} & \textbf{Data Sources} & \textbf{Application} \\
+\midrule
+District Health Information System 2 (DHIS2) & 70+ African countries & Routine health facility data & Health management, disease surveillance \\
+Africa CDC Data Platform & Continental & Event-based surveillance, lab data & Outbreak response coordination \\
+KEMRI data platforms & Kenya & Research cohort data, genomics & Malaria, HIV research \\
+West Africa IDSR & Regional & Aggregate surveillance data & Ebola, Lassa fever monitoring \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+The DHIS2 platform, developed by the University of Oslo and implemented across most of Sub-Saharan Africa, represents the largest collective public health big data infrastructure on the continent. It captures routine health data from over 40,000 health facilities across Africa, enabling district-level health management and national disease surveillance.
+
+Challenges include:
+\begin{itemize}
+\item Data quality variations across facilities with different capacity levels
+\item Interoperability challenges with vertical disease programs
+\item Sustainability concerns for platforms requiring ongoing technical support
+\end{itemize}
+\end{frame}
+\begin{frame}{Addressing Infrastructure Constraints}
+The implementation of big data systems in African contexts requires adaptation to infrastructure realities:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+\node[draw,rectangle,fill=blue!20,minimum width=2.5cm,minimum height=1cm] (A) at (0,1.5) {Limited Connectivity};
+\node[draw,rectangle,fill=green!20,minimum width=2.5cm,minimum height=1cm] (B) at (3.5,1.5) {Offline-First Design};
+\node[draw,rectangle,fill=red!20,minimum width=2.5cm,minimum height=1cm] (C) at (7,1.5) {Sync Protocols};
+\node[draw,rectangle,fill=yellow!20,minimum width=2.5cm,minimum height=1cm] (D) at (3.5,-0.5) {Data Compression};
+\node[draw,rectangle,fill=purple!20,minimum width=2.5cm,minimum height=1cm] (E) at (7,-0.5) {Edge Analytics};
+\draw[->,thick] (A) -- (B);
+\draw[->,thick] (B) -- (C);
+\draw[->,thick] (C) -- (E);
+\draw[->,thick] (B) -- (D);
+\node[draw,rectangle,fill=gray!20,minimum width=10cm,minimum height=0.6cm] at (3.5,-1.8) {Key Principle: Process data where it is generated};
+\end{tikzpicture}
+\end{center}
+
+Best practices for African big data implementation include:
+\begin{itemize}
+\item \textbf{Offline-capable applications}: Data collection applications that function without continuous connectivity and synchronize when networks are available
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Edge computing**: Performing initial data processing and anomaly detection at the point of collection to reduce bandwidth requirements for data transmission
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Sample-based aggregation**: For extremely low-bandwidth environments, transmitting aggregated indicators rather than individual records
+\end{itemize}
+
+The Cellphone-based Interactive Voice Response (CIVR) system for malaria surveillance in Tanzania exemplifies these principles, allowing community health workers to submit case data via basic mobile phones with data aggregation at district level.
+\end{frame}
+\section{Summary}
+\begin{frame}{Key Takeaways}
+\begin{enumerate}
+\item Big data for public health extends beyond volume to encompass velocity, variety, veracity, and value, each dimension requiring specific technical and methodological considerations.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+\item The Learning Health System framework provides a theoretical foundation for transforming routine health data into continuous quality improvement and population health insights.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+\item Data quality assessment is essential before analytics, with completeness, accuracy, timeliness, and consistency requiring ongoing monitoring and automated quality control.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+\item African initiatives like DHIS2 demonstrate that big data public health systems can be successfully implemented despite infrastructure constraints through appropriate design choices.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+\item Offline-first architectures, edge computing, and sample-based aggregation enable big data applications in settings with limited and unreliable connectivity.
+\end{enumerate}
+
+\begin{center}
+\textbf{Questions for Further Discussion}
+\end{center}
+
+How can public health systems balance the desire for comprehensive data collection with the need for data minimization and privacy protection? What governance frameworks are needed to ensure that big data insights benefit the populations from whom data is collected?
+\end{frame}
+\end{document}
