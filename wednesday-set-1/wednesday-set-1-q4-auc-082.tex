@@ -1,0 +1,420 @@
+\documentclass[9pt,xcolor=dvipsnames,aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,graphicx,tikz,pgfplots,booktabs,siunitx}
+\usetikzlibrary{arrows,shapes,decorations.pathmorphing,decorations.pathreplacing,decorations.snapping,fit,positioning,calc,intersections,shapes.geometric,backgrounds}
+\usetheme[numbering=fraction,titleformat=smallcaps,sectionpage=progressbar]{metropolis}
+\usepackage[style=authoryear]{biblatex}
+\addbibresource{references.bib}
+\setbeamertemplate{bibliography item}[text]
+\graphicspath{{../assets/}}
+\DeclareMathOperator{\e}{e}
+\title{\Large SDS6210: Informatics for Health\\[0.3em]\small Wednesday Set 1, Q4: AUC = 0.82 - Understanding and Interpreting the Area Under the ROC Curve}
+\author{\textbf{Cavin Otieno}}
+\institute{MSc Public Health Data Science\\Department of Health Informatics}
+\date{\today}
+\begin{document}
+\begin{frame}[noframenumbering,plain]
+    \maketitleslide
+\end{frame}
+\section{Definition: ROC Curve}
+\begin{frame}{Definition: Receiver Operating Characteristic Curve}
+The Receiver Operating Characteristic (ROC) curve is a graphical representation of classifier performance that illustrates the tradeoff between sensitivity (true positive rate) and specificity (1 minus false positive rate) across all possible classification thresholds.
+
+For a binary classifier with predicted probability scores, the ROC curve plots:
+\[
+\text{Y-axis: True Positive Rate (Sensitivity)} = \frac{TP}{TP + FN} = P(\hat{Y}=1|Y=1)
+\]
+\[
+\text{X-axis: False Positive Rate (1 - Specificity)} = \frac{FP}{FP + TN} = P(\hat{Y}=1|Y=0)
+\]
+
+As the classification threshold varies from 0 to 1:
+\begin{itemize}
+\item Lower thresholds increase sensitivity but decrease specificity (more positives called, more false alarms)
+\end{itemize}
+
+\begin{itemize}
+\item Higher thresholds increase specificity but decrease sensitivity (fewer false alarms, more missed cases)
+\end{itemize}
+
+The ROC curve traces this tradeoff by plotting TPR against FPR at each possible threshold value. The diagonal line (TPR = FPR) represents a random classifier with no discriminative ability.
+\end{frame}
+\begin{frame}{Mathematical Definition of the ROC Curve}
+Let $\hat{Y}$ be the predicted probability from a classifier, and let $c$ be the classification threshold. For each threshold $c$, the classifier predicts $\hat{Y} = 1$ if $\hat{Y} \geq c$, and $\hat{Y} = 0$ otherwise.
+
+The ROC curve is defined parametrically:
+\[
+\text{TPR}(c) = P(\hat{Y} \geq c | Y = 1)
+\]
+\[
+\text{FPR}(c) = P(\hat{Y} \geq c | Y = 0)
+\]
+
+As $c$ ranges from 0 to 1:
+\[
+\text{ROC} = \{(\text{FPR}(c), \text{TPR}(c)) : c \in [0, 1]\}
+\]
+
+The ROC curve has the following properties:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Point} & \textbf{Coordinates} & \textbf{Interpretation} \\
+\midrowcolor
+Minimum threshold ($c=0$) | (1, 1) | All cases classified positive \\
+Maximum threshold ($c=1$) | (0, 0) | All cases classified negative \\
+Random classifier | Diagonal: TPR = FPR | No discriminative ability \\
+Perfect classifier | (0, 1) | Zero false positives, 100\% true positives \\
+\bottomrule
+\end{tabular}}
+\end{center}
+\end{frame}
+\section{Definition: AUC}
+\begin{frame}{Formal Definition of AUC}
+The Area Under the ROC Curve (AUC) quantifies the overall discriminative ability of a classifier as a single scalar value. Mathematically, AUC is defined as the definite integral:
+
+\[
+\text{AUC} = \int_{0}^{1} \text{TPR}(\text{FPR}) \, d(\text{FPR})
+\]
+
+This integral can be interpreted geometrically as the area under the ROC curve from FPR = 0 to FPR = 1.
+
+Alternative representations of AUC:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Formula} & \textbf{Interpretation} & \textbf{Use Case} \\
+\midrowcolor
+$\int_0^1 \text{TPR}(u) du$ | TPR as function of FPR | Standard definition \\
+$\int_{-\infty}^{\infty} \int_{-\infty}^{\infty} I(\hat{y}_+ > \hat{y}_-) f_+(\hat{y}) f_-(\hat{y}) d\hat{y} d\hat{y}$ | Probability interpretation & Theoretical derivation \\
+$\frac{1}{n_+ n_-} \sum_{i=1}^{n_+} \sum_{j=1}^{n_-} I(\hat{y}_i > \hat{y}_j)$ | Mann-Whitney U statistic | Non-parametric estimation \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+where $\hat{y}_+$ represents predicted scores for positive cases, $\hat{y}_-$ for negative cases, and $I(\cdot)$ is the indicator function.
+\end{frame}
+\begin{frame}{Probabilistic Interpretation of AUC}
+The AUC has an elegant probabilistic interpretation: it equals the probability that a randomly chosen positive instance is ranked higher (has a higher predicted score) than a randomly chosen negative instance.
+
+Formally:
+\[
+\text{AUC} = P(\hat{Y}_+ > \hat{Y}_-)
+\]
+
+This interpretation provides intuitive meaning to the AUC value:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{AUC Value} & \textbf{Interpretation} & \textbf{Example Application} \\
+\midrowcolor
+0.50 | Random chance (no discriminative ability) | Coin flip, baseline \\
+0.60 | Poor discriminative ability | Slightly better than chance \\
+0.70 | Acceptable discrimination | Many clinical applications \\
+0.80 | Excellent discrimination | Good diagnostic tests \\
+0.90 | Outstanding discrimination & Gold standard tests \\
+1.00 | Perfect classification & Theoretical optimum \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+For AUC = 0.82, the interpretation is:
+\[
+P(\hat{Y}_+ > \hat{Y}_-) = 0.82
+\]
+
+This means that 82\% of the time, a randomly selected case with the condition will have a higher risk score than a randomly selected case without the condition.
+\end{frame}
+\begin{frame}{Visual Representation of AUC = 0.82}
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+\begin{axis}[
+    axis lines=middle,
+    xlabel={False Positive Rate (1 - Specificity)},
+    ylabel={True Positive Rate (Sensitivity)},
+    xmin=0, xmax=1,
+    ymin=0, ymax=1,
+    legend pos=south east,
+    width=0.75\textwidth,
+    height=0.6\textwidth,
+    domain=0:1
+]
+\addplot[blue,thick,samples=200] {1/(1+exp(-2.1*(2*x-1)))};
+\addlegendentry{Model (AUC = 0.82)}
+\addplot[red,dashed,thick] coordinates {(0,0) (1,1)};
+\addlegendentry{Random (AUC = 0.50)}
+\node[blue] at (axis cs:0.3,0.85) {AUC = 0.82};
+\node[red] at (axis cs:0.7,0.35) {AUC = 0.50};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+The shaded area under the blue curve represents the AUC of 0.82. This area is substantially larger than the 0.50 area under the diagonal (random classifier), indicating meaningful discriminative ability. The ROC curve rises steeply in the lower FPR region, indicating good separation between positive and negative cases at clinically relevant thresholds.
+\end{frame}
+\section{Public Health Interpretation of AUC = 0.82}
+\begin{frame}{Public Health Meaning of AUC = 0.82}
+An AUC of 0.82 has significant practical implications for public health applications:
+
+\textbf{Interpretation framework}:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{AUC Range} & \textbf{Discrimination} & \textbf{Public Health Utility} \\
+\midrowcolor
+0.50 - 0.60 | Fail | Not useful for screening or diagnosis |
+0.60 - 0.70 | Poor | Limited utility, needs improvement |
+0.70 - 0.80 | Fair | Acceptable for many screening applications |
+0.80 - 0.90 | Good | Excellent for most clinical and public health uses |
+>0.90 | Excellent | Gold standard level discrimination |
+\bottomrule
+\end{tabular}}
+\end{center}
+
+For AUC = 0.82:
+\begin{itemize}
+\item \textbf{Screening utility}: Suitable for population-based screening where confirmatory testing follows positive screens
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Risk stratification**: Can effectively rank individuals by risk level for resource allocation
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Clinical decision support**: Useful for guiding clinical decisions when combined with other information
+\end{itemize}
+
+The interpretation depends on context:
+\begin{itemize}
+\item For a rare disease, high sensitivity at moderate specificity may be preferred
+\end{itemize}
+
+\begin{itemize}
+\item For common conditions, overall discrimination matters for population management
+\end{itemize}
+\end{frame}
+\begin{frame}{Epidemiological Interpretation of AUC = 0.82}
+In epidemiological research, AUC = 0.82 provides substantial information about the predictive ability of a model or diagnostic test:
+
+\textbf{Disease prediction context}:
+If a risk prediction model for cardiovascular disease has AUC = 0.82:
+\[
+P(\hat{Y}_{\text{CV disease}} > \hat{Y}_{\text{no CV disease}}) = 0.82
+\]
+
+This means that among all pairs of individuals where one develops CVD and one does not, the model will correctly rank the future case higher 82\% of the time.
+
+\textbf{Implications for prevention}:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Application} & \textbf{AUC = 0.82 Utility} & \textbf{Limitation} \\
+\midrowcolor
+Risk stratification | Can identify high-risk 20\% for intensive intervention | Cannot identify which specific individuals will develop disease |
+Resource allocation | Can prioritize prevention resources effectively | Some individuals in lower strata will develop disease |
+Screening programs | Can define threshold with desired sensitivity/specificity | Optimal threshold depends on costs/benefits \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+In LMIC contexts, AUC = 0.82 represents strong performance given data quality and infrastructure constraints. However, model validation in local populations is essential before deployment.
+\end{frame}
+\begin{frame}{Example: Malaria Rapid Diagnostic Test Validation}
+Consider validating a new malaria RDT in Kenya with the following results:
+
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}lccc@{}}
+\toprule \textbf{} & \textbf{PCR Positive} & \textbf{PCR Negative} & \textbf{Total} \\
+\midrowcolor
+RDT Positive | 168 | 32 | 200 |
+RDT Negative | 32 | 268 | 300 |
+Total | 200 | 300 | 500 |
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Calculate performance metrics:
+\[
+\text{Sensitivity} = \frac{168}{200} = 0.84
+\]
+\[
+\text{Specificity} = \frac{268}{300} = 0.89
+\]
+\[
+\text{PPV} = \frac{168}{200} = 0.84
+\]
+\[
+\text{NPV} = \frac{268}{300} = 0.89
+\]
+
+If the full ROC curve across multiple thresholds yields AUC = 0.82:
+\[
+P(\text{RDT score} > \text{RDT score}_{\text{negative}} | \text{PCR positive}) = 0.82
+\]
+
+This indicates the RDT has good discriminative ability for malaria infection, suitable for clinical diagnosis in endemic areas. The sensitivity of 84\% and specificity of 89\% provide a reasonable balance for malaria case management.
+\end{frame}
+\begin{frame}{Interpretation Across Multiple Thresholds}
+The AUC = 0.82 value represents aggregate performance across all thresholds. At different operating points:
+
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}lllp{4cm}@{}}
+\toprule \textbf{Threshold} & \textbf{Sensitivity} & \textbf{Specificity} & \textbf{Use Case} \\
+\midrowcolor
+Low (high sensitivity) | 0.92 | 0.62 | Rule-out screening, minimize missed cases |
+Medium (balanced) | 0.82 | 0.78 | General clinical use |
+High (high specificity) | 0.68 | 0.92 | Rule-in confirmation, minimize false positives |
+\bottomrule
+\end{tabular}}
+\end{center}
+
+The choice of operating point depends on:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Consideration} & \textbf{Implication} & \textbf{LMIC Context} \\
+\midrowcolor
+Disease prevalence | PPV/NPV depend on prevalence | Varies across regions, seasons |
+Consequences of missed cases | False negatives more costly for severe diseases | Limited follow-up access |
+Resource availability | Confirmatory testing capacity | Varies by facility level |
+\bottomrule
+\end{tabular}}
+\end{center}
+
+For malaria in high-transmission areas, a lower threshold (higher sensitivity) may be preferred to ensure treatment of all suspected cases, even at the cost of some overtreatment.
+\end{frame}
+\section{LMIC Context: Sub-Saharan Africa}
+\begin{frame}{AUC = 0.82 in African Public Health Contexts}
+An AUC of 0.82 represents strong performance for diagnostic and predictive tools deployed in resource-constrained settings:
+
+\textbf{Comparative perspective}:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Application} & \textbf{Typical AUC} & \textbf{AUC = 0.82 Assessment} \\
+\midrowcolor
+Clinical diagnosis (expert) | 0.75 - 0.85 | Competitive with expert diagnosis |
+Algorithm-based screening | 0.70 - 0.80 | Above average performance |
+Risk prediction models | 0.65 - 0.80 | Good discriminative ability |
+Random guessing | 0.50 | Baseline \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+\textbf{LMIC-specific considerations}:
+\begin{itemize}
+\item \textbf{Data quality}: Models trained on high-resource data may have lower AUC when validated in African populations due to population differences
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Spectrum bias**: Disease presentation may differ between research settings and routine clinical practice
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Validation requirement}: AUC should be reported on local validation data, not just development data
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Comparative advantage**: Even moderate AUC may be valuable when specialist expertise is unavailable
+\end{itemize}
+\end{frame}
+\begin{frame}{Case Study: Child Mortality Prediction in Kenya}
+A community health worker app predicts under-5 mortality risk using household and child characteristics:
+
+Model development (n = 10,000 children):
+\[
+\text{AUC}_{\text{development}} = 0.86
+\]
+
+External validation in different region (n = 3,000 children):
+\[
+\text{AUC}_{\text{validation}} = 0.82
+\]
+
+Interpretation of AUC = 0.82 in this context:
+\[
+P(\text{Risk score}_{\text{died before 5}} > \text{Risk score}_{\text{survived to 5}}) = 0.82
+\]
+
+Operational implications:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Use Case} & \textbf{Utility} & \textbf{LMIC Consideration} \\
+\midrowcolor
+Priority home visits | Can identify 20\% of children for intensive support | Limited CHW capacity requires prioritization |
+Referral decisions | Can stratify children by risk level | Referral facilities may be distant \\
+Resource allocation | Can guide program resource distribution | Budget constraints limit coverage \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+The slight AUC decrease from development to validation (0.86 to 0.82) is expected and represents realistic performance for deployment.
+\end{frame}
+\begin{frame}{Challenges in AUC Interpretation in LMICs}
+Several factors complicate AUC interpretation in low-resource settings:
+
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Challenge} & \textbf{Impact on AUC} & \textbf{Mitigation Strategy} \\
+\midrowcolor
+Verification bias | Gold standard not available for all patients | Use sensitivity analysis, alternative reference standards |
+Spectrum bias | Disease severity differs from training data & Validate across severity levels, report subgroups \\
+Sample size limitations | Unstable AUC estimates | Confidence intervals, bootstrapping \\
+Outcome definition | Variable case definition affects performance & Standardized definitions, sensitivity analyses \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Critical reporting elements for LMIC studies:
+\begin{itemize}
+\item \textbf{Confidence intervals}: Report 95\% CI for AUC, e.g., AUC = 0.82 (95\% CI: 0.78, 0.86)
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Validation**: Report AUC on held-out data or external validation sample
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Subgroup analysis**: Report AUC by region, disease severity, and population subgroup
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Comparison}: Compare against current standard of care, not just random guessing
+\end{itemize}
+\end{frame}
+\section{Summary}
+\begin{frame}{Key Takeaways}
+\begin{enumerate}
+1. The ROC curve plots TPR against FPR across all classification thresholds, visualizing the sensitivity-specificity tradeoff.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+2. AUC = 0.82 is formally defined as $\int_0^1 \text{TPR}(\text{FPR}) \, d(\text{FPR})$, representing aggregate classifier performance.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+3. The probabilistic interpretation states that AUC = 0.82 means $P(\hat{Y}_+ > \hat{Y}_-) = 0.82$, or 82\% correct ranking of cases versus non-cases.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+4. In public health, AUC = 0.82 represents good discriminative ability suitable for screening, risk stratification, and clinical decision support.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+5. In LMIC contexts, local validation is essential as AUC may differ from development samples due to population and disease spectrum differences.
+\end{enumerate}
+
+\begin{center}
+\textbf{Questions for Further Discussion}
+\end{center}
+
+How should public health programs balance the AUC threshold for screening versus confirmation when confirmatory testing capacity is limited? What are the ethical implications of deploying models with AUC = 0.82 in populations where they have not been locally validated?
+\end{frame}
+\end{document}

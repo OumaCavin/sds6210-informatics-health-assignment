@@ -1,0 +1,403 @@
+\documentclass[9pt,xcolor=dvipsnames,aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,graphicx,tikz,pgfplots,booktabs,siunitx}
+\usetikzlibrary{arrows,shapes,decorations.pathmorphing,decorations.pathreplacing,decorations.snapping,fit,positioning,calc,intersections,shapes.geometric,backgrounds}
+\usetheme[numbering=fraction,titleformat=smallcaps,sectionpage=progressbar]{metropolis}
+\usepackage[style=authoryear]{biblatex}
+\addbibresource{references.bib}
+\setbeamertemplate{bibliography item}[text]
+\graphicspath{{../assets/}}
+\DeclareMathOperator{\e}{e}
+\title{\Large SDS6210: Informatics for Health\\[0.3em]\small Wednesday Set 1, Q3: Logistic Regression, Random Forests, and Neural Networks}
+\author{\textbf{Cavin Otieno}}
+\institute{MSc Public Health Data Science\\Department of Health Informatics}
+\date{\today}
+\begin{document}
+\begin{frame}[noframenumbering,plain]
+    \maketitleslide
+\end{frame}
+\section{Logistic Regression}
+\begin{frame}{Logistic Regression: Definition and Formulation}
+Logistic regression is a generalized linear model for binary classification that models the probability of a binary outcome as a function of predictor variables. It is widely used in epidemiology for risk prediction, disease surveillance, and identifying risk factors.
+
+The logistic regression model relates the log-odds of the outcome to linear predictors:
+\[
+\log\left(\frac{P(Y=1)}{P(Y=0)}\right) = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \cdots + \beta_p x_p
+\]
+
+Equivalently, the probability of the outcome is:
+\[
+P(Y=1|\mathbf{x}) = \frac{1}{1 + e^{-(\beta_0 + \beta_1 x_1 + \cdots + \beta_p x_p)}} = \text{logit}^{-1}(\beta_0 + \beta_1 x_1 + \cdots + \beta_p x_p)
+\]
+
+The logistic function (sigmoid) has the property of mapping any real number to the interval $(0, 1)$:
+\[
+\sigma(z) = \frac{1}{1 + e^{-z}}
+\]
+
+Key properties:
+\begin{itemize}
+\item \textbf{Bounded output}: Probabilities between 0 and 1
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Interpretable coefficients}: Odds ratios from exponentiated coefficients
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Probabilistic framework**: Direct probability estimates
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Additive linear predictor**: Log-odds is linear combination of covariates
+\end{itemize}
+\end{frame}
+\begin{frame}{Odds Ratio Interpretation}
+The exponentiated regression coefficients have direct interpretation as adjusted odds ratios. For a unit increase in predictor $x_j$:
+\[
+OR_j = e^{\beta_j} = \frac{\text{Odds}(Y=1|x_j + 1)}{\text{Odds}(Y=1|x_j)}
+\]
+
+Example: Predicting hospital readmission in heart failure patients
+\[
+\log\left(\frac{P(\text{readmission})}{1 - P(\text{readmission})}\right) = -2.5 + 0.45 \times \text{Age}_{10} + 0.62 \times \text{PriorHF} + 0.28 \times \text{Charlson}
+\]
+
+Interpretation:
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}lllp{4cm}@{}}
+\toprule \textbf{Covariate} & \textbf{Coefficient} & \textbf{OR} & \textbf{Interpretation} \\
+\midrowcolor
+Age (per 10 years) | 0.45 | 1.57 | 57\% higher odds of readmission per decade |
+Prior hospitalization | 0.62 | 1.86 | 86\% higher odds if previously hospitalized |
+Charlson comorbidity | 0.28 | 1.32 | 32\% higher odds per comorbidity point |
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Odds ratios approximate risk ratios when the outcome is rare (<10\% prevalence). For common outcomes, logistic regression odds ratios overstate the risk ratio and should be interpreted with caution or adjusted using rare disease assumptions.
+\end{frame}
+\begin{frame}{Estimation and Inference in Logistic Regression}
+Logistic regression coefficients are estimated using maximum likelihood estimation. For $n$ independent observations with outcomes $y_i$ and covariates $\mathbf{x}_i$:
+
+The likelihood function:
+\[
+L(\boldsymbol{\beta}) = \prod_{i=1}^{n} \left[p_i^{y_i} (1 - p_i)^{1 - y_i}\right]
+\]
+where $p_i = P(Y=1|\mathbf{x}_i;\boldsymbol{\beta})$
+
+The log-likelihood:
+\[
+\ell(\boldsymbol{\beta}) = \sum_{i=1}^{n} \left[y_i \log p_i + (1 - y_i) \log(1 - p_i)\right]
+\]
+
+The score equation (first derivative):
+\[
+\mathbf{U}(\boldsymbol{\beta}) = \frac{\partial \ell}{\partial \boldsymbol{\beta}} = \sum_{i=1}^{n} (y_i - p_i) \mathbf{x}_i = \mathbf{0}
+\]
+
+The Fisher information matrix:
+\[
+\mathbf{I}(\boldsymbol{\beta}) = -\frac{\partial^2 \ell}{\partial \boldsymbol{\beta} \partial \boldsymbol{\beta}'} = \sum_{i=1}^{n} p_i (1 - p_i) \mathbf{x}_i \mathbf{x}_i'
+\]
+
+Coefficient standard errors are estimated as $\widehat{\text{SE}}(\hat{\beta}_j) = \sqrt{\hat{I}^{jj}(\hat{\boldsymbol{\beta}})}$, enabling Wald tests and confidence intervals.
+\end{frame}
+\section{Random Forests}
+\begin{frame}{Random Forests: Concept and Ensemble Learning}
+Random Forest (RF) is an ensemble learning method that combines multiple decision trees to produce more accurate and stable predictions than individual trees. The ensemble approach reduces variance and helps prevent overfitting.
+
+Ensemble learning principles:
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+\node[draw,rectangle,fill=blue!20,minimum width=2.2cm,minimum height=1.2cm] (T1) at (0,1) {Tree 1};
+\node[draw,rectangle,fill=green!20,minimum width=2.2cm,minimum height=1.2cm] (T2) at (3,1) {Tree 2};
+\node[draw,rectangle,fill=red!20,minimum width=2.2cm,minimum height=1.2cm] (T3) at (6,1) {Tree 3};
+\node[draw,rectangle,fill=yellow!20,minimum width=2.2cm,minimum height=1.2cm] (Tn) at (9,1) {... Tree K};
+\node[draw,rectangle,fill=purple!20,minimum width=3cm,minimum height=1.5cm] (AG) at (4.5,-1) {Ensemble\\Aggregation};
+\node[draw,ellipse,fill=gray!10,minimum width=11cm,minimum height=3.5cm] (RF) at (4.5,0) {};
+\draw[->,thick] (T1) -- (AG);
+\draw[->,thick] (T2) -- (AG);
+\draw[->,thick] (T3) -- (AG);
+\draw[->,thick] (Tn) -- (AG);
+\node at (4.5,-2.2) {Final prediction: Majority vote (classification) or Average (regression)};
+\end{tikzpicture}
+\end{center}
+
+Random Forest algorithm (Breiman, 2001):
+\begin{enumerate}
+1. Draw $B$ bootstrap samples from the training data
+2. For each bootstrap sample, grow a decision tree:
+   - At each node, randomly select $m$ predictors from the $p$ available
+   - Split on the best predictor among the $m$ selected
+   - Grow trees to maximum depth (no pruning)
+3. Aggregate predictions across all trees
+\end{enumerate}
+
+Key parameter: $m \approx \sqrt{p}$ for classification, $m \approx p/3$ for regression.
+\end{frame}
+\begin{frame}{Random Forest: Strengths and Applications}
+Random Forest properties:
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Property} & \textbf{Description} & \textbf{Benefit} \\
+\midrowcolor
+Ensemble averaging | Combines 100-1000 trees | Reduces variance, improves stability \\
+Random feature selection | m predictors randomly chosen at each split | Decorrelates trees, reduces overfitting |
+Out-of-bag error | Prediction on out-of-bag samples | Built-in validation, no separate test set needed |
+Variable importance | Mean decrease in impurity or permutation importance | Identifies key predictors \\
+Non-parametric | No distributional assumptions | Flexible modeling of complex relationships \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Variable importance calculation:
+\[
+\text{VI}(X_j) = \frac{1}{B} \sum_{b=1}^{B} \left(\text{Error}_{\text{OOB}}^b - \text{Error}_{\text{OOB}}^{b(j)}\right)
+\]
+where $\text{Error}_{\text{OOB}}^{b(j)}$ is the error when variable $X_j$ is permuted in the out-of-bag sample for tree $b$.
+
+Public health applications of Random Forest:
+\begin{itemize}
+\item Disease risk prediction from clinical and demographic factors
+\end{itemize}
+
+\begin{itemize}
+\item Environmental health: Predicting pollution exposure from sensor data
+\end{itemize}
+
+\begin{itemize}
+\item Genomic analysis: Identifying genetic markers associated with disease
+\end{itemize}
+
+\begin{itemize}
+\item Healthcare utilization: Predicting hospital readmission risk
+\end{itemize}
+\end{frame}
+\section{Neural Networks}
+\begin{frame}{Neural Networks: Architecture and Components}
+Neural Networks are computational models inspired by biological neural systems, consisting of interconnected nodes (neurons) organized in layers that transform input data into predictions.
+
+Basic architecture:
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+\node[draw,circle,fill=blue!20,minimum width=0.8cm] (i1) at (0,2) {$x_1$};
+\node[draw,circle,fill=blue!20,minimum width=0.8cm] (i2) at (0,1) {$x_2$};
+\node[draw,circle,fill=blue!20,minimum width=0.8cm] (i3) at (0,0) {$x_3$};
+\node[draw,circle,fill=green!20,minimum width=0.8cm] (h1) at (3,2.5) {$h_1$};
+\node[draw,circle,fill=green!20,minimum width=0.8cm] (h2) at (3,1) {$h_2$};
+\node[draw,circle,fill=green!20,minimum width=0.8cm] (h3) at (3,-0.5) {$h_3$};
+\node[draw,circle,fill=red!20,minimum width=0.8cm] (o1) at (6,1) {$\hat{y}$};
+\draw[->,thick] (i1) -- (h1);
+\draw[->,thick] (i1) -- (h2);
+\draw[->,thick] (i1) -- (h3);
+\draw[->,thick] (i2) -- (h1);
+\draw[->,thick] (i2) -- (h2);
+\draw[->,thick] (i2) -- (h3);
+\draw[->,thick] (i3) -- (h1);
+\draw[->,thick] (i3) -- (h2);
+\draw[->,thick] (i3) -- (h3);
+\draw[->,thick] (h1) -- (o1);
+\draw[->,thick] (h2) -- (o1);
+\draw[->,thick] (h3) -- (o1);
+\node at (0,-1.2) {\textbf{Input Layer}};
+\node at (3,-1.2) {\textbf{Hidden Layer}};
+\node at (6,-1.2) {\textbf{Output Layer}};
+\end{tikzpicture}
+\end{center}
+
+Mathematical representation:
+\[
+h_j^{(1)} = \sigma\left(\sum_{i=1}^{p} w_{ji}^{(1)} x_i + b_j^{(1)}\right), \quad j = 1, \ldots, H
+\]
+\[
+\hat{y} = \sigma\left(\sum_{j=1}^{H} w_{j}^{(2)} h_j^{(1)} + b^{(2)}\right)
+\]
+
+where $\sigma(\cdot)$ is an activation function (ReLU, sigmoid, or tanh), $w$ are weights, and $b$ are biases.
+\end{frame}
+\begin{frame}{Neural Network Training and Deep Learning}
+Neural networks are trained using gradient-based optimization:
+
+\textbf{Forward Propagation}:
+Compute predictions through the network layers using current weights.
+
+\textbf{Loss Function}:
+For binary classification:
+\[
+\mathcal{L} = -\frac{1}{n} \sum_{i=1}^{n} \left[y_i \log(\hat{y}_i) + (1 - y_i) \log(1 - \hat{y}_i)\right]
+\]
+
+\textbf{Backpropagation}:
+Compute gradients of loss with respect to weights using the chain rule:
+\[
+\frac{\partial \mathcal{L}}{\partial w} = \frac{\partial \mathcal{L}}{\partial \hat{y}} \cdot \frac{\partial \hat{y}}{\partial w}
+\]
+
+\textbf{Weight Update}:
+\[
+w_{new} = w_{old} - \eta \frac{\partial \mathcal{L}}{\partial w}
+\]
+where $\eta$ is the learning rate.
+
+Deep learning extends neural networks with:
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Architecture} & \textbf{Application} & \textbf{Health Use Case} \\
+\midrowcolor
+CNN | Image analysis | Medical imaging interpretation, radiology \\
+RNN/LSTM | Sequential data | Time-series monitoring, EHR event prediction \\
+Transformer | NLP | Clinical text mining, patient note analysis \\
+\bottomrule
+\end{tabular}}
+\end{center}
+\end{frame}
+\section{Comparative Analysis}
+\begin{frame}{Comparing Logistic Regression, Random Forest, and Neural Networks}
+\begin{center}
+\scalebox[0.65]{
+\begin{tabular}{@{}llll@{}}
+\toprule \textbf{Dimension} & \textbf{Logistic Regression} & \textbf{Random Forest} & \textbf{Neural Network} \\
+\midrowcolor
+Interpretability | High (coefficients, ORs) | Medium (variable importance) | Low (black box) |
+Model transparency | Clear equation | Tree structures visible | Complex networks opaque |
+Performance on linear problems | Excellent | Good | Good |
+Performance on non-linear problems | Requires interactions | Excellent | Excellent |
+Data requirements | Moderate | Large | Very large |
+Training time | Fast | Moderate | Slow (GPU often needed) |
+Feature engineering needed | Manual specification | Minimal (handles interactions) | Raw features acceptable |
+Overfitting risk | Low (regularization available) | Low (ensemble effect) | High (requires careful tuning) |
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Model selection guidance:
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Situation} & \textbf{Recommended Method} & \textbf{Rationale} \\
+\midrowcolor
+Small sample, interpretability required | Logistic regression | Stable estimates, clear interpretation \\
+Non-linear relationships suspected | Random Forest | Handles non-linearity without feature engineering \\
+Image, text, or complex pattern data | Neural Networks | Superior performance on unstructured data \\
+Medical decision-making with explanations | Logistic regression or RF | Interpretability for clinicians \\
+Prediction accuracy is paramount | RF or Neural Networks | Ensemble/deep learning for complex patterns \\
+\bottomrule
+\end{tabular}}
+\end{center}
+\end{frame}
+\begin{frame}{Public Health Interpretation Considerations}
+For public health applications, model choice involves balancing multiple considerations:
+
+\textbf{Epidemiological inference}:
+Logistic regression remains the standard for etiological research because:
+\begin{itemize}
+\item Coefficients have clear causal interpretation (with appropriate design)
+\end{itemize}
+
+\begin{itemize}
+\item Adjusted odds ratios facilitate comparison with published literature
+\end{itemize}
+
+\begin{itemize}
+\item Assumptions are explicit and testable
+
+\textbf{Prediction vs. inference}:
+\begin{itemize}
+\item For prediction: Random Forest or Neural Networks may outperform
+\end{itemize}
+
+\begin{itemize}
+\item For inference: Logistic regression provides interpretable effect estimates
+\end{itemize}
+
+\textbf{Model deployment in resource-limited settings}:
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Setting} & \textbf{Model Type} & \textbf{Consideration} \\
+\midrowcolor
+Rural clinic, simple deployment | Logistic regression | Easy to implement, low computation \\
+Tablet-based risk screening | Random Forest | Offline prediction, moderate computation \\
+Mobile phone-based triage | Simple RF or regression | Computational limits on device \\
+\bottomrule
+\end{tabular}}
+\end{center}
+\end{itemize}
+\end{frame}
+\section{LMIC Context: Sub-Saharan Africa}
+\begin{frame}{Machine Learning in African Public Health}
+Machine learning applications in African health contexts are growing:
+
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Application} & \textbf{Method} & \textbf{Example} \\
+\midrowcolor
+Malaria microscopy screening | CNN (image classification) | Identifying parasites in blood smears |
+Childhood mortality prediction | Random Forest | Identifying high-risk children for intervention |
+Tuberculosis detection | CNN (chest X-ray) | Computer-aided TB screening in primary care \\
+Disease outbreak prediction | Various | Forecasting cholera, dengue, Rift Valley fever |
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Challenges for ML in LMIC health settings:
+\begin{itemize}
+\item \textbf{Labeled data scarcity**: Training data often limited, especially for rare conditions
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Distribution shifts**: Models trained on HIC data may not generalize to African populations
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Computational resources**: Deep learning requires GPU infrastructure often unavailable
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Implementation barriers**: Integration with clinical workflows requires system changes
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Ethical considerations**: Bias, fairness, and accountability in algorithmic decision-making
+\end{itemize}
+
+The Global Health Machine Learning community has developed guidelines for appropriate ML development and deployment in global health settings.
+\end{frame}
+\section{Summary}
+\begin{frame}{Key Takeaways}
+\begin{enumerate}
+1. Logistic regression models log-odds as a linear function of predictors, with interpretable odds ratios.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+2. Random Forest combines multiple decision trees through bootstrap sampling and random feature selection to reduce variance.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+3. Neural Networks use interconnected layers of neurons with non-linear activation functions to learn complex patterns.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+4. Logistic regression excels at interpretability and inference; RF and NN excel at prediction with complex patterns.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+5. ML applications in African health contexts are growing but face challenges around data, generalization, and implementation.
+\end{enumerate}
+
+\begin{center}
+\textbf{Questions for Further Discussion}
+\end{center}
+
+How should public health practitioners balance the improved prediction accuracy of complex ML models against the interpretability requirements for clinical and policy decision-making? What safeguards are needed to ensure that ML systems deployed in LMICs do not exacerbate existing health inequities?
+\end{frame}
+\end{document}

@@ -1,0 +1,392 @@
+\documentclass[9pt,xcolor=dvipsnames,aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,graphicx,tikz,pgfplots,booktabs,siunitx}
+\usetikzlibrary{arrows,shapes,decorations.pathmorphing,decorations.pathreplacing,decorations.snapping,fit,positioning,calc,intersections,shapes.geometric,backgrounds}
+\usetheme[numbering=fraction,titleformat=smallcaps,sectionpage=progressbar]{metropolis}
+\usepackage[style=authoryear]{biblatex}
+\addbibresource{references.bib}
+\setbeamertemplate{bibliography item}[text]
+\graphicspath{{../assets/}}
+\DeclareMathOperator{\e}{e}
+\title{\Large SDS6210: Informatics for Health\\[0.3em]\small Tuesday Set 1, Q1: Building a Public Health Information System}
+\author{\textbf{Cavin Otieno}}
+\institute{MSc Public Health Data Science\\Department of Health Informatics}
+\date{\today}
+\begin{document}
+\begin{frame}[noframenumbering,plain]
+    \maketitleslide
+\end{frame}
+\section{Definition and Conceptual Framework}
+\begin{frame}{Definition: Public Health Information System}
+A Public Health Information System (PHIS) is an integrated collection of hardware, software, data, processes, and people that work together to collect, store, manage, analyze, and disseminate information for public health practice, surveillance, policy development, and decision-making. PHIS serves as the nervous system of public health, enabling the systematic transformation of data into actionable intelligence for population health improvement.
+
+The World Health Organization defines a health information system as "a system that allows for the collection, management, analysis, and dissemination of health-related data for policy formulation, resource allocation, and evaluation of health programs and interventions." A PHIS specifically focuses on population-level data rather than individual patient care, though it draws heavily from clinical information systems.
+
+Core purposes of a PHIS include:
+\begin{itemize}
+\item \textbf{Surveillance}: Monitoring disease occurrence and health determinants across populations
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Program Management}: Supporting the planning, implementation, and evaluation of health programs
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Policy Support}: Providing evidence for health policy formulation and resource allocation
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Response Coordination}: Enabling rapid detection and response to public health emergencies
+\end{itemize}
+\end{frame}
+\begin{frame}{Conceptual Framework: PHIS Components}
+A comprehensive PHIS comprises four fundamental components that interact to produce timely, accurate, and actionable public health intelligence:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+\node[draw,rectangle,rounded corners,fill=blue!20,minimum width=2.5cm,minimum height=1.2cm] (D) at (0,2) {Data\\Sources};
+\node[draw,rectangle,rounded corners,fill=green!20,minimum width=2.5cm,minimum height=1.2cm] (S) at (4,2) {Standards};
+\node[draw,rectangle,rounded corners,fill=red!20,minimum width=2.5cm,minimum height=1.2cm] (I) at (8,2) {Infrastructure};
+\node[draw,rectangle,rounded corners,fill=yellow!20,minimum width=2.5cm,minimum height=1.2cm] (G) at (4,0) {Governance};
+\node[draw,ellipse,fill=purple!10,minimum width=11cm,minimum height=4cm] (PHIS) at (4,1) {};
+\draw[->,thick] (D) -- (S) node[midway,above] {Data standards};
+\draw[->,thick] (S) -- (I) node[midway,above] {Technical specs};
+\draw[->,thick] (I) -- (G) node[midway,right] {Policy framework};
+\draw[->,thick] (G) -- (D) node[midway,below] {Legal authority};
+\node at (4,-1) {\textbf{Public Health Information System}};
+\end{tikzpicture}
+\end{center}
+
+These components are interconnected and must be developed in concert. A weakness in any single component undermines the entire system's effectiveness. For example, sophisticated infrastructure cannot compensate for poor data quality from inadequately governed data sources.
+\end{frame}
+\section{Component 1: Data Sources}
+\begin{frame}{Data Sources in Public Health Information Systems}
+Data sources form the foundation of any PHIS, providing the raw material for analysis and decision-making. In low- and middle-income countries, data sources typically span multiple domains with varying levels of maturity:
+
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{4cm}p{3cm}@{}}
+\toprule
+\textbf{Data Source} & \textbf{Type} & \textbf{Content} & \textbf{LMIC Challenge} \\
+\midrowcolor
+Health Facility Reports & Routine administrative & Service delivery, diagnoses, births/deaths & Completeness, timeliness \\
+Household Surveys & Population-based & Risk factors, coverage, behaviors & Cost, frequency, sampling \\
+Civil Registration & Vital events & Births, deaths, causes of death & Completeness (<50\% in many African nations) \\
+Laboratory Systems & Event-based & Test results, outbreaks & Connectivity, standardization \\
+Event-Based Surveillance & Informal & Media, rumors, community reports & Verification, signal vs. noise \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+In Sub-Saharan Africa, the District Health Information System (DHIS2) has become the dominant platform for aggregating routine health facility data across over 70 countries. The system collects data on:
+\begin{itemize}
+\item Maternal and child health indicators (antenatal care, skilled birth attendance, immunization)
+\end{itemize}
+
+\begin{itemize}
+\item Disease surveillance (malaria cases, TB notifications, HIV treatment outcomes)
+\end{itemize}
+
+\begin{itemize}
+\item Health system metrics (bed occupancy, staffing, commodity stocks)
+\end{itemize}
+\end{frame}
+\section{Component 2: Standards}
+\begin{frame}{Standards for Public Health Information Systems}
+Standards ensure that data can be collected consistently, exchanged reliably, and analyzed meaningfully across different systems, time periods, and organizational boundaries. Three categories of standards are essential:
+
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Standard Type} & \textbf{Examples} & \textbf{Purpose} \\
+\midrowcolor
+Data Content Standards & ICD-11, SNOMED CT, LOINC & Standardized vocabulary for diagnoses, procedures, lab tests \\
+Data Exchange Standards & HL7 v2, HL7 FHIR, IHE profiles & Format and transmission protocols for interoperability \\
+Data Quality Standards & ISO 17364, Data Quality Assessment Framework & Completeness, accuracy, timeliness, consistency \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+For LMICs, the choice of standards involves balancing international compatibility with local capacity:
+\begin{itemize}
+\item \textbf{ICD-11} (effective 2022): Mandatory for mortality coding, enables international comparisons
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{LOINC}: Essential for laboratory data interoperability (malaria RDT results, CD4 counts)
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{DHIS2 aggregate data standards**: Adapted for routine HMIS with country-specific indicator definitions
+\end{itemize}
+
+Kenya's adoption of DHIS2 with standardized indicator definitions enabled comparison across all 47 counties and integration with national reporting to WHO.
+\end{frame}
+\section{Component 3: Infrastructure}
+\begin{frame}{Infrastructure Requirements for PHIS}
+Infrastructure encompasses the hardware, software, networks, and facilities that enable PHIS operations. In resource-constrained settings, infrastructure planning must account for:
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+\node[draw,rectangle,fill=blue!20,minimum width=2.2cm,minimum height=1cm] (H) at (0,1.5) {Hardware\\Servers, Devices};
+\node[draw,rectangle,fill=green!20,minimum width=2.2cm,minimum height=1cm] (N) at (3.5,1.5) {Networks\\Connectivity};
+\node[draw,rectangle,fill=red!20,minimum width=2.2cm,minimum height=1cm] (S) at (7,1.5) {Software\\Platforms};
+\node[draw,rectangle,fill=yellow!20,minimum width=2.2cm,minimum height=1cm] (F) at (3.5,-0.5) {Facilities\\Power, Space};
+\node[draw,ellipse,fill=purple!10,minimum width=10cm,minimum height=3cm] (I) at (3.5,0.5) {};
+\draw[->,thick] (H) -- (N);
+\draw[->,thick] (N) -- (S);
+\draw[->,thick] (S) -- (F);
+\draw[->,thick] (F) -- (1.5,0.5) -- (H);
+\node[draw,rectangle,fill=gray!20,minimum width=10cm,minimum height=0.6cm] at (3.5,-1.8) {Infrastructure components must work together for reliable system operation};
+\end{tikzpicture}
+\end{center}
+
+Key infrastructure considerations for African PHIS:
+\begin{itemize}
+\item \textbf{Offline capability}: Many rural health facilities lack reliable connectivity; systems must function offline with periodic synchronization
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Device diversity**: Systems must work on low-end smartphones, tablets, and desktop computers
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Power resilience**: Solar power and battery backup are essential where grid electricity is unreliable
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Scalability**: Systems must accommodate growth in users, facilities, and data volumes
+\end{itemize}
+\end{frame}
+\section{Component 4: Governance}
+\begin{frame}{Governance Framework for Public Health Information Systems}
+Governance establishes the policies, procedures, and organizational structures that ensure PHIS operates effectively, ethically, and sustainably. Strong governance addresses:
+
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Governance Area} & \textbf{Key Elements} & \textbf{LMIC Considerations} \\
+\midrowcolor
+Data Ownership & Legal authority, stewardship roles & Balancing national needs with facility autonomy \\
+Data Sharing & Agreements, access controls, release policies & Cross-border disease surveillance requires regional agreements \\
+Privacy Protection & Consent, access limits, security measures & Limited data protection legislation in many African nations \\
+Quality Management & Validation, verification, feedback loops & Resource constraints for quality assurance activities \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+The Tanzania experience provides lessons in PHIS governance:
+\begin{itemize}
+\item The Health Information Unit within the Ministry of Health provides central coordination
+\end{itemize}
+
+\begin{itemize}
+\item Data Use Agreements specify what data can be shared and for what purposes
+\end{itemize}
+
+\begin{itemize}
+\item Regular data quality reviews at regional and district levels identify and correct problems
+\end{itemize}
+
+\begin{itemize}
+\item Annual health data conferences bring together stakeholders to review system performance
+\end{itemize}
+
+Effective governance requires political commitment, dedicated resources, and ongoing stakeholder engagement.
+\end{frame}
+\section{System Development Lifecycle}
+\begin{frame}{Step-by-Step System Development Lifecycle}
+Developing a PHIS follows a systematic lifecycle that ensures all components are properly addressed:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+\node[draw,rectangle,fill=blue!20,minimum width=2cm,minimum height=1.2cm] (1) at (0,1.5) {1.\\Requirements};
+\node[draw,rectangle,fill=green!20,minimum width=2cm,minimum height=1.2cm] (2) at (3,1.5) {2.\\Design};
+\node[draw,rectangle,fill=red!20,minimum width=2cm,minimum height=1.2cm] (3) at (6,1.5) {3.\\Development};
+\node[draw,rectangle,fill=yellow!20,minimum width=2cm,minimum height=1.2cm] (4) at (9,1.5) {4.\\Testing};
+\node[draw,rectangle,fill=purple!20,minimum width=2cm,minimum height=1.2cm] (5) at (6,-0.5) {6.\\Evaluation};
+\node[draw,rectangle,fill=orange!20,minimum width=2cm,minimum height=1.2cm] (6) at (3,-0.5) {5.\\Deployment};
+\draw[->,thick] (1) -- (2) node[midway,above] {};
+\draw[->,thick] (2) -- (3) node[midway,above] {};
+\draw[->,thick] (3) -- (4) node[midway,above] {};
+\draw[->,thick] (4) -- (6) node[midway,right] {};
+\draw[->,thick] (6) -- (5) node[midway,below] {};
+\draw[->,thick] (5) -- (3,0.5) -- (2,0.5) node[midway,below] {Iterative improvement};
+\end{tikzpicture}
+\end{center}
+
+Phase 1: Requirements Analysis (Stakeholder consultation, gap analysis, needs assessment)
+Phase 2: System Design (Architecture, data model, user interface specifications)
+Phase 3: Development (Coding, configuration, customization)
+Phase 4: Testing (Unit, integration, user acceptance testing)
+Phase 5: Deployment (Training, rollout, data migration)
+Phase 6: Evaluation and Continuous Improvement (Monitoring, optimization, scaling)
+\end{frame}
+\begin{frame}{PHIS Development Process Detail}
+\begin{center}
+\scalebox[0.7]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Phase} & \textbf{Key Activities} & \textbf{Deliverables} \\
+\midrowcolor
+1. Requirements & Stakeholder interviews, existing system review, needs prioritization & Requirements specification document \\
+2. Design & Technical architecture, data flow diagrams, screen mockups & System design document, data dictionary \\
+3. Development & Coding, configuration, integration development & Functional system, test scripts \\
+4. Testing & Unit testing, integration testing, pilot deployment & Test reports, bug fixes, validated system \\
+5. Deployment & Training programs, rollout schedule, data migration & Trained users, operational system, migrated data \\
+6. Evaluation & User satisfaction surveys, performance metrics review & Evaluation report, improvement plan \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+For LMIC implementations, additional considerations include:
+\begin{itemize}
+\item Phased rollout starting with pilot facilities before national scale
+\end{itemize}
+
+\begin{itemize}
+\item Local language support and culturally appropriate interfaces
+\end{itemize}
+
+\begin{itemize}
+\item Integration with existing systems to avoid disruption
+\end{itemize}
+
+\begin{itemize}
+\item Sustainability planning including local technical capacity building
+\end{itemize}
+\end{frame}
+\section{Logical Flow Diagram}
+\begin{frame}{PHIS Logical Flow Diagram}
+\begin{center}
+\begin{tikzpicture}[scale=0.7]
+\node[draw,rectangle,fill=blue!20,minimum width=2cm,minimum height=1.2cm] (HF) at (0,3) {Health\\Facilities};
+\node[draw,rectangle,fill=green!20,minimum width=2cm,minimum height=1.2cm] (CHW) at (0,0.5) {Community\\Health Workers};
+\node[draw,rectangle,fill=red!20,minimum width=2cm,minimum height=1.2cm] (LAB) at (0,-2) {Laboratories};
+\node[draw,rectangle,fill=yellow!20,minimum width=1.5cm,minimum height=1cm] (DC) at (4,1) {Data\\Collection};
+\node[draw,rectangle,fill=purple!20,minimum width=1.5cm,minimum height=1cm] (VAL) at (7,1) {Data\\Validation};
+\node[draw,rectangle,fill=orange!20,minimum width=1.5cm,minimum height=1cm] (AG) at (10,1) {Data\\Aggregation};
+\node[draw,rectangle,fill=teal!20,minimum width=1.5cm,minimum height=1cm] (AN) at (7,-2) {Analysis\\Engine};
+\node[draw,rectangle,fill=pink!20,minimum width=1.5cm,minimum height=1cm] (VIS) at (10,-2) {Visualization\\Dashboard};
+\node[draw,ellipse,fill=gray!10,minimum width=3cm,minimum height=2cm] (DHIS) at (7,1.5) {DHIS2\\Instance};
+\node[draw,ellipse,fill=gray!10,minimum width=3cm,minimum height=2cm] (D) at (10,-0.5) {Decision\\Support};
+\draw[->,thick] (HF) -- (DC);
+\draw[->,thick] (CHW) -- (DC);
+\draw[->,thick] (LAB) -- (DC);
+\draw[->,thick] (DC) -- (VAL);
+\draw[->,thick] (VAL) -- (AG);
+\draw[->,thick] (AG) -- (AN);
+\draw[->,thick] (AN) -- (VIS);
+\draw[->,thick] (VIS) -- (D);
+\node[draw,rectangle,fill=gray!20,minimum width=14cm,minimum height=0.6cm] at (5,-3.5) {Data flows from collection sources through validation and aggregation to analysis and decision support};
+\end{tikzpicture}
+\end{center}
+This logical flow illustrates the movement of data from multiple sources through standardized processing stages to produce actionable public health intelligence. Each stage has specific functions: collection captures data at source, validation ensures quality, aggregation enables summary analysis, and visualization presents insights for decision-making.
+\end{frame}
+\section{LMIC Context: Sub-Saharan Africa}
+\begin{frame}{PHIS Implementation in Sub-Saharan Africa}
+Sub-Saharan Africa has made significant progress in PHIS development, with several distinctive features:
+
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Country/Initiative} & \textbf{Platform} & \textbf{Key Features} \\
+\midrowcolor
+Kenya & DHIS2 & National coverage, 10,000+ facilities, real-time surveillance \\
+Nigeria & DHIS2 + SORMAS & Hybrid approach for COVID-19 response, state-level autonomy \\
+Tanzania & DHIS2 + iHRIS & Integrated workforce and service delivery data \\
+Uganda & DHIS2 + OpenMRS & Facility-level patient data with national aggregation \\
+South Africa & TIER.Net + DHIS2 & HIV treatment tracking with surveillance integration \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+The African Regional Office of WHO (AFRO) has supported PHIS strengthening through:
+\begin{itemize}
+\item The Integrated Disease Surveillance and Response (IDSR) strategy
+\end{itemize}
+
+\begin{itemize}
+\item The District Health Information System (DHIS2) regional support hub
+\end{itemize}
+
+\begin{itemize}
+\item Training programs for health information officers across member states
+\end{itemize}
+
+\begin{itemize}
+\item Regional data quality review and validation processes
+\end{itemize}
+
+Challenges that persist include data quality inconsistency, limited analytical capacity at sub-national levels, and sustainable funding for system maintenance and updates.
+\end{frame}
+\begin{frame}{Case Study: Ghana's Health Information System Evolution}
+Ghana's journey illustrates PHIS development in practice:
+
+\textbf{Phase 1 (2000-2010): Paper-based HMIS}
+- Monthly paper forms from health facilities
+- Manual aggregation at district and regional levels
+- Significant delays and data quality issues
+
+\textbf{Phase 2 (2010-2018): DHIS2 Implementation}
+- Gradual rollout starting with pilot regions
+- Training of over 5,000 health information officers
+- Integration of vertical program data (HIV, TB, malaria)
+
+\textbf{Phase 3 (2018-Present): Advanced Applications}
+- Real-time disease surveillance through event-based systems
+- Integration with civil registration for vital statistics
+- Predictive analytics for disease outbreak detection
+
+Key success factors:
+\begin{itemize}
+\item Political commitment from Ministry of Health leadership
+\end{itemize}
+
+\begin{itemize}
+\item Investment in human resources (health information officers at every district)
+\end{itemize}
+
+\begin{itemize}
+\item Gradual, phased implementation allowing learning and adaptation
+\end{itemize}
+
+\begin{itemize}
+\item Regular data quality review meetings that drive improvement
+\end{itemize}
+\end{frame}
+\section{Summary}
+\begin{frame}{Key Takeaways}
+\begin{enumerate}
+1. A Public Health Information System comprises four core components: data sources, standards, infrastructure, and governance.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+2. Data sources in LMICs span routine health facility reports, household surveys, civil registration, laboratory systems, and event-based surveillance.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+3. Standards for content (ICD-11, LOINC), exchange (HL7 FHIR), and quality ensure interoperability and reliability.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+4. Infrastructure planning must address offline capability, device diversity, power resilience, and scalability.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+5. Strong governance covering data ownership, sharing, privacy, and quality is essential for sustainable PHIS operation.
+\end{enumerate}
+
+\begin{center}
+\textbf{Questions for Further Discussion}
+\end{center}
+
+How should African nations balance the need for standardized national PHIS with the autonomy required for sub-national adaptation and innovation? What mechanisms can ensure that PHIS investments yield sustainable benefits beyond initial donor-funded implementation phases?
+\end{frame}
+\end{document}

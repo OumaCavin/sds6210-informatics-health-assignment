@@ -1,0 +1,467 @@
+\documentclass[9pt,xcolor=dvipsnames,aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{amsMath,amssymb,graphicx,tikz,pgfplots,booktabs,siunitx}
+\usetikzlibrary{arrows,shapes,decorations.pathmorphing,decorations.pathreplacing,decorations.snapping,fit,positioning,calc,intersections,shapes.geometric,backgrounds}
+\usetheme[numbering=fraction,titleformat=smallcaps,sectionpage=progressbar]{metropolis}
+\usepackage[style=authoryear]{biblatex}
+\addbibresource{references.bib}
+\setbeamertemplate{bibliography item}[text]
+\graphicspath{{../assets/}}
+\DeclareMathOperator{\e}{e}
+\title{\Large SDS6210: Informatics for Health\\[0.3em]\small Advanced Quantitative: Sensitivity, Specificity, PPV, and NPV}
+\author{\textbf{Cavin Otieno}}
+\institute{MSc Public Health Data Science\\Department of Health Informatics}
+\date{\today}
+\begin{document}
+\begin{frame}[noframenumbering,plain]
+    \maketitleslide
+\end{frame}
+\section{Confusion Matrix and Diagnostic Accuracy}
+\begin{frame}{The Confusion Matrix}
+The confusion matrix (also called contingency table or error matrix) cross-classifies test results against the gold standard disease status, providing the foundation for calculating all diagnostic accuracy measures.
+
+\begin{center}
+\begin{tikzpicture}[scale=1.1]
+\node[draw,rectangle,fill=blue!10,minimum width=3.5cm,minimum height=2.5cm] (TL) at (0,0.5) {};
+\node[draw,rectangle,fill=green!10,minimum width=3.5cm,minimum height=2.5cm] (TR) at (4,0.5) {};
+\node[draw,rectangle,fill=red!10,minimum width=3.5cm,minimum height=2.5cm] (BL) at (0,-2.5) {};
+\node[draw,rectangle,fill=yellow!10,minimum width=3.5cm,minimum height=2.5cm] (BR) at (4,-2.5) {};
+\node at (1.75,1.8) {\textbf{Disease Present}};
+\node at (-1.8,-1) {\textbf{Test Result}};
+\node at (1.75,0.5) {\textbf{True Positive (TP)}\\$a$};
+\node at (4.75,0.5) {\textbf{False Negative (FN)}\\$b$};
+\node at (1.75,-1) {\textbf{False Positive (FP)}\\$c$};
+\node at (4.75,-1) {\textbf{True Negative (TN)}\\$d$};
+\node at (1.75,-3.5) {\textbf{Total with Disease}\\$a+b$};
+\node at (4.75,-3.5) {\textbf{Total without Disease}\\$c+d$};
+\node at (-1.8,1.8) {Test Positive};
+\node at (-1.8,-1) {Test Negative};
+\node[draw,rectangle,rounded corners,fill=gray!20,minimum width=9cm,minimum height=0.5cm] at (2,-4.5) {$N = a + b + c + d$};
+\end{tikzpicture}
+\end{center}
+
+Marginal totals:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Cell} & \textbf{Formula} & \textbf{Definition} \\
+\midrowcolor
+Row totals & $a+b$, $c+d$ | Total with/without disease (gold standard) |
+Column totals | $a+c$, $b+d$ | Total with positive/negative test |
+Grand total | $N = a+b+c+d$ | Total sample size \\
+\bottomrule
+\end{tabular}}
+\end{center}
+\end{frame}
+\begin{frame}{Definitions of Diagnostic Accuracy Measures}
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}lllp{4cm}@{}}
+\toprule \textbf{Measure} & \textbf{Formula} & \textbf{Interpretation} & \textbf{Range} \\
+\midrowcolor
+Sensitivity & TP/(TP+FN) & P(Test+ | Disease+) & 0-1 \\
+Specificity | TN/(TN+FP) | P(Test- | Disease-) | 0-1 \\
+Positive Predictive Value | TP/(TP+FP) | P(Disease+ | Test+) | 0-1 \\
+Negative Predictive Value | TN/(TN+FN) | P(Disease- | Test-) | 0-1 \\
+Positive Likelihood Ratio | Sens/(1-Spec) | Odds ratio for Test+ | 0-∞ \\
+Negative Likelihood Ratio | (1-Sens)/Spec | Odds ratio for Test- | 0-1 \\
+Diagnostic Odds Ratio | (TP/TN)/(FP/FN) | Overall discriminative ability | 0-∞ \\
+Accuracy | (TP+TN)/N | Proportion correct | 0-1 \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Key distinctions:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Characteristic} & \textbf{Sensitivity/Specificity} & \textbf{PPV/NPV} \\
+\midrowcolor
+Dependence on prevalence | No (intrinsic to test) | Yes (depends on disease frequency) \\
+Use in test evaluation | Standard, comparable across settings | Clinical interpretation in specific context |
+Target for optimization | Varies by clinical scenario | Depends on local epidemiology \\
+\bottomrule
+\end{tabular}}
+\end{center}
+\end{frame}
+\begin{frame}{Step-by-Step Calculation: Worked Example}
+Consider validating a malaria RDT with $N = 400$ patients:
+
+Observed results:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llcc@{}}
+\toprule \textbf{} & \textbf{RDT Positive} & \textbf{RDT Negative} & \textbf{Total} \\
+\midrowcolor
+PCR Positive (Malaria) | 168 | 32 | 200 |
+PCR Negative (No Malaria) | 48 | 152 | 200 |
+Total | 216 | 184 | 400 \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Calculate each measure:
+
+\textbf{Sensitivity}:
+\[
+\text{Sensitivity} = \frac{\text{TP}}{\text{TP} + \text{FN}} = \frac{168}{168 + 32} = \frac{168}{200} = 0.84
+\]
+
+\textbf{Specificity}:
+\[
+\text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}} = \frac{152}{152 + 48} = \frac{152}{200} = 0.76
+\]
+
+\textbf{Positive Predictive Value}:
+\[
+\text{PPV} = \frac{\text{TP}}{\text{TP} + \text{FP}} = \frac{168}{168 + 48} = \frac{168}{216} = 0.78
+\]
+
+\textbf{Negative Predictive Value}:
+\[
+\text{NPV} = \frac{\text{TN}}{\text{TN} + \text{FN}} = \frac{152}{152 + 32} = \frac{152}{184} = 0.83
+\]
+\end{frame}
+\begin{frame}{Likelihood Ratio Calculations}
+Likelihood ratios express how much a test result changes the odds of disease:
+
+\textbf{Positive Likelihood Ratio (LR+)}:
+\[
+\text{LR+} = \frac{\text{Sensitivity}}{1 - \text{Specificity}} = \frac{0.84}{1 - 0.76} = \frac{0.84}{0.24} = 3.5
+\]
+
+Interpretation: A positive test increases the odds of disease by 3.5 times.
+
+\textbf{Negative Likelihood Ratio (LR-)}:
+\[
+\text{LR-} = \frac{1 - \text{Sensitivity}}{\text{Specificity}} = \frac{1 - 0.84}{0.76} = \frac{0.16}{0.76} = 0.21
+\]
+
+Interpretation: A negative test decreases the odds of disease by a factor of 0.21 (approximately 1/5).
+
+Using likelihood ratios with pre-test probability:
+
+\[
+\text{Post-test odds} = \text{Pre-test odds} \times \text{LR}
+\]
+
+Example: Pre-test probability of malaria = 30\% (odds = 0.43)
+\[
+\text{Post-test odds} = 0.43 \times 3.5 = 1.505
+\]
+\[
+\text{Post-test probability} = \frac{1.505}{1 + 1.505} = 0.60 = 60\%
+\]
+
+A positive RDT increases the probability of malaria from 30\% to 60\%.
+\end{frame}
+\begin{frame}{Prevalence Dependence of PPV and NPV}
+PPV and NPV depend critically on disease prevalence:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+\begin{axis}[
+    axis lines=middle,
+    xlabel={Prevalence},
+    ylabel={Predictive Value},
+    xmin=0, xmax=1,
+    ymin=0, ymax=1,
+    legend pos=north east,
+    width=0.75\textwidth,
+    height=0.55\textwidth,
+    domain=0.01:0.99
+]
+\addplot[blue,thick,samples=200] {(0.84*x)/(0.84*x + (1-0.76)*(1-x))};
+\addlegendentry{PPV}
+\addplot[red,thick,samples=200] {(0.76*(1-x))/((1-0.84)*x + 0.76*(1-x))};
+\addlegendentry{NPV}
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+This has critical implications:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Setting} & \textbf{Prevalence} & \textbf{PPV} \\
+\midrowcolor
+High transmission area | 40\% | 0.68 |
+Low transmission area | 5\% | 0.15 |
+Screening asymptomatic travelers | 1\% | 0.03 \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Even a test with good sensitivity (84\%) and specificity (76\%) has very low PPV (3\%) in very low prevalence settings, meaning most positive results are false positives.
+\end{frame}
+\section{Epidemiological Interpretation}
+\begin{frame}{Clinical Interpretation of Diagnostic Measures}
+Understanding what each measure tells us in clinical practice:
+
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Measure} & \textbf{Question Answered} & \textbf{Clinical Use} \\
+\midrowcolor
+Sensitivity | "If the patient has the disease, will the test be positive?" | Rule OUT (high sensitivity tests miss few cases) |
+Specificity | "If the patient does not have the disease, will the test be negative?" | Rule IN (high specificity tests confirm disease) |
+PPV | "If the test is positive, does the patient have the disease?" | Communicating results to patients |
+NPV | "If the test is negative, does the patient not have the disease?" | Reassuring patients, avoiding unnecessary treatment \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Clinical decision rules:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Scenario} & \textbf{Preferred Test Characteristics} & \textbf{Example} \\
+\midrowcolor
+Screening (rule out) | High sensitivity, acceptable specificity | HIV screening, cancer screening |
+Confirmation (rule in) | High specificity, acceptable sensitivity | Confirmatory Western blot for HIV |
+Resource-limited | Adequate performance, low cost | RDT for malaria in endemic areas \\
+\bottomrule
+end{tabular}}
+\end{center}
+
+SnNout rule: A test with high Sensitivity and negative result can Rule Out disease.
+SpPin rule: A test with high Specificity and positive result can Rule In disease.
+\end{frame}
+\begin{frame}{Tradeoffs Between Sensitivity and Specificity}
+Increasing sensitivity typically decreases specificity, and vice versa. The optimal threshold depends on clinical context:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+\begin{axis}[
+    axis lines=middle,
+    xlabel={Threshold},
+    ylabel={Value},
+    xmin=0, xmax=1,
+    ymin=0, ymax=1,
+    legend pos=south east,
+    width=0.75\textwidth,
+    height=0.55\textwidth,
+    domain=0.01:0.99
+]
+\addplot[blue,thick,samples=200] {exp(2*(x-0.5))/(1+exp(2*(x-0.5)))};
+\addlegendentry{Sensitivity}
+\addplot[red,thick,samples=200] {1/(1+exp(2*(x-0.5)))};
+\addlegendentry{Specificity}
+\addplot[green,dashed] coordinates {(0.3,0) (0.3,1)};
+\addlegendentry{Low threshold (high Sens, low Spec)}
+\addplot[orange,dashed] coordinates {(0.7,0) (0.7,1)};
+\addlegendentry{High threshold (low Sens, high Spec)}
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+Factors influencing optimal threshold choice:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Factor} & \textbf{Implication} & \textbf{LMIC Context} \\
+\midrowcolor
+Disease severity | Missed cases very costly → favor sensitivity | Ebola, untreated bacterial meningitis |
+Treatment availability | False positives wasteful → favor specificity | Limited drug supplies |
+Confirmatory testing | Can follow up positives → favor sensitivity | Referral available |
+Prevalence | Low prevalence → PPV drops → adjust threshold | Screening programs \\
+\bottomrule
+\end{tabular}}
+\end{center}
+\end{frame}
+\begin{frame}{ROC Curve and Optimal Threshold Selection}
+The ROC curve visualizes the sensitivity-specificity tradeoff:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+\begin{axis}[
+    axis lines=middle,
+    xlabel={1 - Specificity (FPR)},
+    ylabel={Sensitivity (TPR)},
+    xmin=0, xmax=1,
+    ymin=0, ymax=1,
+    legend pos=south east,
+    width=0.75\textwidth,
+    height=0.55\textwidth
+]
+\addplot[blue,thick] coordinates {(0,0) (0.1,0.6) (0.24,0.84) (0.4,0.92) (1,1)};
+\addlegendentry{Test (AUC = 0.82)}
+\addplot[red,dashed] coordinates {(0,0) (1,1)};
+\addlegendentry{Random (AUC = 0.50)}
+\node[blue] at (axis cs:0.4,0.5) {AUC = 0.82};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+Optimal threshold selection methods:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Method} & \textbf{Criterion} & \textbf{Formula} \\
+\midrowcolor
+Youden's J | Maximize J = Sens + Spec - 1 | $J^* = \max_c [\text{Sens}(c) + \text{Spec}(c) - 1]$ |
+Cost-sensitive | Minimize expected cost | $C(c) = c_{FP}(1-\text{Sens}) + c_{FN}\text{Spec}$ |
+Equal error rate | Sens = Spec | Intersection with diagonal |
+\bottomrule
+\end{tabular}}
+\end{center}
+
+For Youden's J in our example: Threshold = 0.45, Sens = 0.84, Spec = 0.76, J = 0.60.
+\end{frame}
+\section{LMIC Context: Sub-Saharan Africa}
+\begin{frame}{Diagnostic Test Evaluation in African Settings}
+Evaluating diagnostic tests in resource-limited settings requires specific considerations:
+
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Consideration} & \textbf{Impact on Evaluation} & \textbf{LMIC Challenge} \\
+\midrowcolor
+Gold standard availability | May not be locally available | PCR, culture may require referral |
+Spectrum bias | Disease severity differs from validation studies | Mild vs. severe cases |
+Verification bias | Not all patients receive gold standard | Resource constraints |
+Sample size | Lower patient volumes at facilities | Adequate power for precise estimates \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Example: Validating a new TB LAM test in Kenya
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Population} & \textbf{Sensitivity} & \textbf{Specificity} \\
+\midrowcolor
+HIV-positive, CD4<100 | 72\% | 88\% |
+HIV-positive, any CD4 | 45\% | 92\% |
+HIV-negative | 21\% | 95\% \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+This example demonstrates spectrum bias: test performs differently across subgroups. Pooled estimates may mask important variation.
+
+Recommendations for LMIC test evaluation:
+\begin{itemize}
+\item Report performance stratified by key subgroups
+\end{itemize}
+
+\begin{itemize}
+\item Use reference standards appropriate to local capacity
+\end{itemize}
+
+\begin{itemize}
+\item Consider pragmatic thresholds for operational use
+\end{itemize}
+\end{frame}
+\begin{frame}{Case Study: Malaria RDT Performance in Africa}
+Malaria RDTs are the primary diagnostic tool in most African health facilities:
+
+Performance expectations for WHO prequalification:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Criterion} & \textbf{P. falciparum} & \textbf{P. vivax} \\
+\midrowcolor
+Sensitivity at 200 parasites/μL | ≥95\% | ≥95\% |
+Specificity | ≥90\% | ≥90\% |
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Observed performance in multi-country evaluation (Kenya, Tanzania, Uganda):
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Country} & \textbf{Sensitivity} & \textbf{Specificity} \\
+\midrowcolor
+Kenya | 98.2\% | 91.5\% |
+Tanzania | 96.8\% | 89.2\% |
+Uganda | 97.5\% | 93.1\% \\
+Pooled | 97.4\% | 91.3\% \\
+\bottomrule
+end{tabular}}
+\end{center}
+
+PPV in different epidemiological contexts:
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Setting} & \textbf{Prevalence} & \textbf{Estimated PPV} \\
+\midrowcolor
+Hyperendemic (children) | 40\% | 89\% |
+Hypoendemic (adults) | 5\% | 36\% \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+This demonstrates why PPV varies dramatically by setting, even for the same test.
+\end{frame}
+\begin{frame}{Interpreting Diagnostic Tests in Clinical Practice}
+Applying diagnostic accuracy measures in LMIC clinical settings:
+
+\textbf{Key principles}:
+\begin{enumerate}
+1. Know the test characteristics (sensitivity, specificity) from validation studies
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+2. Estimate the pre-test probability (prevalence) for your patient population
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+3. Use likelihood ratios to update pre-test to post-test probability
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+4. Consider the consequences of false positives and false negatives
+\end{enumerate}
+
+\textbf{Example calculation}:
+A 5-year-old child presents with fever in a Kenyan health center. Malaria prevalence in under-5 febrile children is approximately 30\%.
+
+Pre-test probability = 30\%, Pre-test odds = 0.43
+
+Malaria RDT result: Positive (LR+ = 3.5)
+
+Post-test odds = 0.43 × 3.5 = 1.505
+
+Post-test probability = 1.505 / (1 + 1.505) = 60\%
+
+Interpretation: A positive RDT increases the probability of malaria from 30\% to 60\%. Clinical judgment and repeat testing may be warranted before committing to treatment.
+\end{frame}
+\section{Summary}
+\begin{frame}{Key Takeaways}
+\begin{enumerate}
+1. The confusion matrix provides TP, FP, TN, FN counts from which all diagnostic accuracy measures are derived.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+2. Sensitivity (P(Test+|Disease+)) and specificity (P(Test-|Disease-)) are intrinsic to the test; PPV and NPV depend on prevalence.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+3. Likelihood ratios provide the mathematical bridge for updating pre-test probability to post-test probability using Bayes' theorem.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+4. The optimal sensitivity-specificity tradeoff depends on clinical context: screening favors sensitivity, confirmation favors specificity.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+5. In LMIC contexts, test evaluation must address spectrum bias, gold standard availability, and varying prevalence across settings.
+\end{enumerate}
+
+\begin{center}
+\textbf{Questions for Further Discussion}
+\end{center}
+
+How should clinicians in resource-limited settings interpret positive rapid diagnostic tests given the variation in PPV across different epidemiological contexts? What role should Bayesian reasoning and likelihood ratios play in clinical decision-making when prevalence data is limited?
+\end{frame}
+\end{document}

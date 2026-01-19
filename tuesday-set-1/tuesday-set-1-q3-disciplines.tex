@@ -1,0 +1,309 @@
+\documentclass[9pt,xcolor=dvipsnames,aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,graphicx,tikz,pgfplots,booktabs,siunitx}
+\usetikzlibrary{arrows,shapes,decorations.pathmorphing,decorations.pathreplacing,decorations.snapping,fit,positioning,calc,intersections,shapes.geometric,backgrounds}
+\usetheme[numbering=fraction,titleformat=smallcaps,sectionpage=progressbar]{metropolis}
+\usepackage[style=authoryear]{biblatex}
+\addbibresource{references.bib}
+\setbeamertemplate{bibliography item}[text]
+\graphicspath{{../assets/}}
+\DeclareMathOperator{\e}{e}
+\title{\Large SDS6210: Informatics for Health\\[0.3em]\small Tuesday Set 1, Q3: Approaches and Disciplines in Health Informatics}
+\author{\textbf{Cavin Otieno}}
+\institute{MSc Public Health Data Science\\Department of Health Informatics}
+\date{\today}
+\begin{document}
+\begin{frame}[noframenumbering,plain]
+    \maketitleslide
+\end{frame}
+\section{Distinguishing Health Informatics Disciplines}
+\begin{frame}{Definition: Health Informatics as a Discipline}
+Health informatics is an interdisciplinary field that combines information science, computer science, and healthcare to develop and evaluate methods for collecting, storing, retrieving, and using health information to improve patient care, public health, and healthcare systems. The discipline encompasses the theoretical foundations, practical applications, and social implications of health information technology.
+
+The American Medical Informatics Association (AMIA) defines health informatics as "the interdisciplinary scientific field that uses and studies information technology, data science, computing, and analytics to generate knowledge and insights from health data for clinical care, public health, health planning, and health administration."
+
+Health informatics differs from related fields:
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Field} & \textbf{Focus} & \textbf{Example Application} \\
+\midrowcolor
+Health Informatics & Information management in healthcare & EHR implementation, CDS development \\
+Biomedical Informatics & Biological and genomic data & Genomics pipelines, protein structure databases \\
+Clinical Informatics & Direct patient care information & CPOE, clinical documentation, decision support \\
+Public Health Informatics & Population health surveillance & Disease reporting, outbreak detection, registries \\
+\bottomrule
+\end{tabular}}
+\end{center}
+These disciplines overlap significantly and practitioners often work across multiple domains throughout their careers.
+\end{frame}
+\begin{frame}{Clinical Informatics}
+Clinical informatics focuses on the use of information technology in direct patient care settings. It bridges clinical practice with information science to improve the quality, safety, and efficiency of healthcare delivery.
+
+Core domains of clinical informatics:
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Domain} & \textbf{Description} & \textbf{Examples} \\
+\midrowcolor
+Electronic Health Records & Digital patient documentation & Progress notes, problem lists, medication lists \\
+Order Management & Computerized provider order entry & Medication orders, lab tests, consultations \\
+Clinical Decision Support & Point-of-care information delivery & Drug interaction alerts, care guidelines, reminders \\
+Workflow Optimization & Clinical process improvement & Order sets, documentation templates, alerts management \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Clinical informaticians typically have clinical backgrounds (medicine, nursing, pharmacy) combined with informatics training. They serve as liaisons between clinical staff and IT departments, ensuring that technology supports rather than disrupts clinical workflows.
+
+In LMICs, clinical informatics faces challenges including limited EHR adoption, infrastructure constraints, and the need to balance technology with existing paper-based workflows. Programs like AMPATH in Kenya demonstrate how clinical informatics can improve care in resource-constrained settings.
+\end{frame}
+\begin{frame}{Public Health Informatics}
+Public health informatics applies informatics principles to the domain of public health, focusing on surveillance, prevention, health promotion, and health protection at the population level. It emphasizes the collection, analysis, and dissemination of health information for public health action.
+
+Distinguishing features from clinical informatics:
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Dimension} & \textbf{Clinical Informatics} & \textbf{Public Health Informatics} \\
+\midrowcolor
+Primary Unit of Analysis & Individual patient & Population/Community \\
+Data Sources & EHRs, clinical systems & Surveillance systems, registries, surveys \\
+Time Horizon & Real-time patient care & Ongoing surveillance, trend analysis \\
+Key Outputs & Clinical decisions & Policy decisions, resource allocation \\
+Stakeholders & Clinicians, patients & Public health officials, policymakers \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Core applications in public health informatics:
+\begin{itemize}
+\item \textbf{Syndromic Surveillance**: Real-time monitoring of symptom patterns
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Electronic Case Reporting**: Automated notifiable disease reporting
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Immunization Registries**: Tracking population vaccination status
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Chronic Disease Registries**: Monitoring population health outcomes
+\end{itemize}
+\end{frame}
+\begin{frame}{Bioinformatics}
+Bioinformatics applies computational and statistical methods to biological data, with particular emphasis on genomic, proteomic, and other molecular-level information. While traditionally associated with basic research, bioinformatics increasingly informs clinical practice through precision medicine.
+
+Key domains of bioinformatics:
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Domain} & \textbf{Description} & \textbf{Public Health Application} \\
+\midrowcolor
+Sequence Analysis & DNA/protein sequence comparison & Pathogen strain typing, outbreak tracking \\
+Genomics Variation & Identifying genetic polymorphisms & Disease susceptibility, drug response prediction \\
+Structural Bioinformatics & Protein structure prediction & Drug target identification \\
+Systems Biology & Integrated omics analysis & Biomarker discovery, pathway analysis \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+In African public health, bioinformatics has been transformative for:
+\begin{itemize}
+\item \textbf{Malaria surveillance}: Tracking drug resistance markers in Plasmodium falciparum
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{HIV research**: Characterizing viral diversity and resistance mutations
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Ebola and COVID-19}: Real-time genomic surveillance of outbreak strains
+\end{itemize}
+
+The Africa CDC Pathogen Genomics Initiative aims to build continental capacity for bioinformatics in disease surveillance.
+\end{frame}
+\begin{frame}{Imaging Informatics}
+Imaging informatics focuses on the management, analysis, and interpretation of medical images. It encompasses the entire lifecycle of medical imaging from acquisition through storage, retrieval, analysis, and long-term archiving.
+
+Components of imaging informatics:
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Component} & \textbf{Description} & \textbf{Standards} \\
+\midrowcolor
+Image Acquisition & Digital image capture modalities & DICOM, IHE profiles \\
+Image Archiving & Long-term storage and retrieval & PACS, cloud storage \\
+Image Exchange & Sharing images across institutions & XDS-I, IHE XCA \\
+Image Analysis & Computer-aided detection/diagnosis & AI/ML algorithms, CADe/CADx \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Imaging informatics challenges in LMICs:
+\begin{itemize}
+\item Limited availability of imaging equipment (radiology, ultrasound)
+\end{itemize}
+
+\begin{itemize}
+\item Shortage of trained radiologists and imaging specialists
+\end{itemize}
+
+\begin{itemize}
+\item Infrastructure requirements for PACS and image storage
+\end{itemize}
+
+Emerging solutions include:
+\begin{itemize}
+\item \textbf{Teleradiology}: Remote interpretation of images
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{AI-assisted interpretation**: Computer-aided detection for tuberculosis, diabetic retinopathy
+\end{itemize}
+\end{frame}
+\begin{frame}{Consumer Health Informatics}
+Consumer health informatics focuses on information resources and tools available to patients and the general public for managing their own health. It empowers individuals to participate actively in their healthcare decisions.
+
+Core areas of consumer health informatics:
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Area} & \textbf{Description} & \textbf{Examples} \\
+\midrowcolor
+Patient Portals & Secure access to personal health records & Lab results, medication lists, visit summaries \\
+Mobile Health Apps & Smartphone applications for health tracking & Step counters, glucose monitors, symptom journals \\
+Health Information Websites & Consumer-oriented health information & WebMD, MedlinePlus, disease-specific education \\
+Social Health Networks & Peer support and information sharing & Patient forums, condition-specific communities \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Consumer health informatics in LMIC contexts:
+\begin{itemize}
+\item \textbf{Mobile health (mHealth)}: SMS-based appointment reminders, health tips
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Community health worker tools**: Mobile apps for household surveys, referral tracking
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Health information access**: Mobile-based health information in local languages
+\end{itemize}
+
+Key considerations include digital literacy, language accessibility, and ensuring that technology does not exacerbate health disparities.
+\end{frame}
+\begin{frame}{Comparative Table: Health Informatics Disciplines}
+\begin{center}
+\scalebox[0.7]{
+\begin{tabular}{@{}llllll@{}}
+\toprule
+\textbf{Dimension} & \textbf{Clinical} & \textbf{Public Health} & \textbf{Bioinformatics} & \textbf{Imaging} & \textbf{Consumer} \\
+\midrowcolor
+Primary Focus & Patient care & Population health & Molecular data & Medical images & Personal health \\
+Key Data Sources & EHRs, CPOE & Surveillance, surveys & Genomic databases & DICOM images & Apps, portals \\
+Primary Users & Clinicians & PH officials & Researchers & Radiologists & Patients \\
+Time Scale & Real-time & Ongoing/periodic & Research cycles & Real-time & Continuous \\
+Core Technologies & CDS, order entry & Surveillance systems & Sequence analysis & PACS, CAD & Mobile apps \\
+LMIC Relevance & EHR adoption & DHIS2, IDSR & Pathogen genomics & Teleradiology & mHealth \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+These disciplines are not mutually exclusive but represent different perspectives and applications of informatics principles. Real-world problems often require expertise spanning multiple domains. For example, implementing precision medicine for cancer in Africa requires:
+\begin{itemize}
+\item Clinical informatics for EHR integration
+\end{itemize}
+
+\begin{itemize}
+\item Bioinformatics for genomic analysis
+\end{itemize}
+
+\begin{itemize}
+\item Imaging informatics for tumor visualization
+\end{itemize}
+
+\begin{itemize}
+\item Consumer informatics for patient engagement
+\end{itemize}
+\end{frame}
+\section{LMIC Context: Sub-Saharan Africa}
+\begin{frame}{Health Informatics Disciplines in African Context}
+The application of health informatics disciplines in Sub-Saharan Africa reflects the region's unique health system structure and priorities:
+
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Discipline} & \textbf{LMIC Focus} & \textbf{Illustrative Examples} \\
+\midrowcolor
+Clinical Informatics & Task-shifting, primary care & AMPATH (Kenya), OpenMRS implementations \\
+Public Health Informatics & Disease surveillance, HMIS & DHIS2 continental rollout, IDSR strategy \\
+Bioinformatics & Pathogen genomics, resistance & Africa CDC pathogen genomics, KEMRI research \\
+Imaging Informatics & Point-of-care ultrasound, teleradiology & RAD-AID Africa, butterfly network probes \\
+Consumer Informatics & mHealth, community health workers & mHero, Medic Mobile, CHW apps \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Cross-cutting challenges across disciplines in Africa:
+\begin{itemize}
+\item \textbf{Infrastructure limitations**: Power, connectivity, device availability
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Human resource constraints**: Shortage of trained informaticians at all levels
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Fragmented systems**: Multiple donor-funded vertical programs with limited integration
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Sustainability concerns**: Dependence on external funding for system development and maintenance
+\end{itemize}
+
+The East, Central, and Southern Africa Health Community (ECSA-HC) has established regional training programs to build capacity across informatics disciplines.
+\end{frame}
+\section{Summary}
+\begin{frame}{Key Takeaways}
+\begin{enumerate}
+1. Health informatics encompasses multiple related disciplines including clinical, public health, bioinformatics, imaging, and consumer health informatics.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+2. Each discipline has distinct focuses, data sources, technologies, and primary users, though significant overlap exists in practice.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+3. Clinical informatics centers on individual patient care; public health informatics addresses population-level concerns.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+4. LMIC applications emphasize appropriate technology for resource-constrained settings, including mobile-based solutions and task-shifting approaches.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+5. Effective health informatics practice often requires expertise spanning multiple disciplines to address complex healthcare challenges.
+\end{enumerate}
+
+\begin{center}
+\textbf{Questions for Further Discussion}
+\end{center}
+
+How should training programs in African universities structure curricula to prepare students for interdisciplinary health informatics practice? What role should regional cooperation play in building informatics capacity across the continent?
+\end{frame}
+\end{document}

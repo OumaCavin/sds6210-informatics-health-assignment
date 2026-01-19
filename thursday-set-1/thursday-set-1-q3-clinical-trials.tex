@@ -1,0 +1,398 @@
+\documentclass[9pt,xcolor=dvipsnames,aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,graphicx,tikz,pgfplots,booktabs,siunitx}
+\usetikzlibrary{arrows,shapes,decorations.pathmorphing,decorations.pathreplacing,decorations.snapping,fit,positioning,calc,intersections,shapes.geometric,backgrounds}
+\usetheme[numbering=fraction,titleformat=smallcaps,sectionpage=progressbar]{metropolis}
+\usepackage[style=authoryear]{biblatex}
+\addbibresource{references.bib}
+\setbeamertemplate{bibliography item}[text]
+\graphicspath{{../assets/}}
+\DeclareMathOperator{\e}{e}
+\title{\Large SDS6210: Informatics for Health\\[0.3em]\small Thursday Set 1, Q3: Clinical Trials and Crossover Design}
+\author{\textbf{Cavin Otieno}}
+\institute{MSc Public Health Data Science\\Department of Health Informatics}
+\date{\today}
+\begin{document}
+\begin{frame}[noframenumbering,plain]
+    \maketitleslide
+\end{frame}
+\section{Definition and Phases of Clinical Trials}
+\begin{frame}{Definition: Clinical Trial}
+A clinical trial is a prospective research study designed to evaluate the safety, efficacy, and effectiveness of interventions (including drugs, devices, procedures, and behavioral interventions) in human participants. Clinical trials generate the highest quality evidence for medical decision-making by systematically comparing outcomes between intervention and control groups under controlled conditions.
+
+The International Conference on Harmonisation (ICH) defines a clinical trial as:
+\begin{center}
+"Any investigation in human subjects intended to discover or verify the clinical, pharmacological, and/or other pharmacodynamic effects of an investigational product(s), and/or to identify any adverse reactions to an investigational product(s), and/or to study absorption, distribution, metabolism, and excretion of an investigational product(s) with the object of ascertaining its safety and/or efficacy."
+\end{center}
+
+Key features distinguishing clinical trials from observational studies:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Feature} & \textbf{Clinical Trial} & \textbf{Observational Study} \\
+\midrowcolor
+Intervention | Investigator-administered | No intervention |
+Assignment | Controlled by protocol | By patient/provider choice |
+Randomization | Often used | Not applicable |
+Causality inference | Strong (with adequate design) | Limited to association \\
+\bottomrule
+\end{tabular}}
+\end{center}
+\end{frame}
+\begin{frame}{Clinical Trial Phases I-IV}
+Clinical trials are classified into phases that address different research questions:
+
+\begin{center}
+\scalebox[0.7]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Phase} & \textbf{Objectives} & \textbf{Participants} \\
+\midrowcolor
+Phase I | Safety, dosage, pharmacokinetics | 20-100 healthy volunteers or patients |
+Phase II | Efficacy, side effects | 100-300 patients with target condition |
+Phase III | Comparative effectiveness, regulatory approval | 300-3,000 patients |
+Phase IV | Post-marketing surveillance, long-term outcomes | Thousands in real-world use \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Phase I objectives and methods:
+\begin{center}
+\scalebox[0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Objective} & \textbf{Methods} & \textbf{Endpoints} \\
+\midrowcolor
+Safety assessment | Dose-escalation, monitoring | Adverse events, vital signs |
+Pharmacokinetics | Blood sampling, PK modeling | Absorption, half-life, metabolism |
+Maximum tolerated dose | Sequential cohorts | DLT (dose-limiting toxicity) \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Phase III design considerations:
+\begin{center}
+\scalebox[0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Consideration} & \textbf{Options} & \textbf{Implication} \\
+\midrowcolor
+Control group | Placebo, active comparator, standard care | Ethical and efficacy considerations |
+Blinding | Open-label, single-blind, double-blind | Bias control |
+Randomization | Simple, stratified, block | Balance across prognostic factors \\
+\bottomrule
+\end{tabular}}
+\end{center}
+\end{frame}
+\begin{frame}{Clinical Trial Phases III and IV in Detail}
+Phase III (Confirmatory) trials:
+\begin{center}
+\scalebox[0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Feature} & \textbf{Description} & \textbf{LMIC Considerations} \\
+\midrowcolor
+Sample size | Large enough for statistical power | Infrastructure for recruitment |
+Duration | Often multi-year follow-up | Maintaining follow-up in mobile populations |
+Regulatory intent | FDA/EMA submission requirements | Local regulatory capacity varies |
+Multi-site | Often 50+ sites across countries | Coordinating across sites, training needs \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Phase IV (Post-marketing) surveillance:
+\begin{center}
+\scalebox[0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Purpose} & \textbf{Methods} & \textbf{LMIC Role} \\
+\midrowcolor
+Safety monitoring | Passive and active surveillance | Contributing adverse event reports |
+Effectiveness | Real-world effectiveness studies | Population-specific effectiveness data \\
+Rare adverse events | Large populations required | International pharmacovigilance networks \\
+Label changes | Evidence-based updates & Local adaptation of guidance \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+In Africa, clinical trial capacity has grown significantly:
+\begin{itemize}
+\item South Africa has extensive clinical trial infrastructure
+\end{itemize}
+
+\begin{itemize}
+\item Kenya, Ghana, Uganda have emerging research capacity
+\end{itemize}
+
+\begin{itemize}
+\item Multi-site trials increasingly include African sites for generalizability
+\end{itemize}
+\end{frame}
+\section{Crossover Design}
+\begin{frame}{Crossover Design: Definition and Rationale}
+A crossover design is a clinical trial design in which participants receive a sequence of different treatments (intervention and control) in successive periods, with washout periods between treatments. Each participant serves as their own control, reducing variability and increasing statistical efficiency.
+
+Design structure:
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+\node[draw,rectangle,fill=blue!20,minimum width=1.5cm,minimum height=1cm] (P1) at (0,1) {Period 1};
+\node[draw,rectangle,fill=green!20,minimum width=1.5cm,minimum height=1cm] (W1) at (2,1) {Washout};
+\node[draw,rectangle,fill=red!20,minimum width=1.5cm,minimum height=1cm] (P2) at (4,1) {Period 2};
+\node[draw,rectangle,fill=yellow!20,minimum width=1.5cm,minimum height=1cm] (F) at (6,1) {Follow-up};
+\node at (0,0) {Treatment A};
+\node at (4,0) {Treatment B};
+\draw[->,thick] (0,-0.3) -- (6,-0.3) node[midway,below] {Time};
+\end{tikzpicture}
+\end{center}
+
+Advantages of crossover designs:
+\begin{center}
+\scalebox[0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Advantage} & \textbf{Explanation} & \textbf{Statistical Benefit} \\
+\midrowcolor
+Within-patient comparison | Each patient receives both treatments | Eliminates inter-patient variability |
+Increased efficiency | Smaller sample size needed | 50-70\% of parallel design |
+Reduced confounding | Patients serve as own controls | Controls for fixed characteristics |
+Ethical considerations | All patients receive active treatment | When placebo unethical \\
+\bottomrule
+end{tabular}}
+\end{center}
+\end{frame}
+\begin{frame}{Mathematical Model for Crossover Design}
+The crossover design can be represented as a mixed-effects model:
+
+\[
+Y_{ijk} = \mu + \pi_k + \tau_{t(i)} + \eta_i + \epsilon_{ijk}
+\]
+
+where:
+\begin{center}
+\scalebox[0.75}{
+\begin{tabular}{@{}ll@{}}
+\toprule \textbf{Symbol} & \textbf{Interpretation} \\
+\midrowcolor
+$Y_{ijk}$ | Outcome for patient $i$, period $k$, treatment $t(i)$ |
+$\mu$ | Overall mean |
+$\pi_k$ | Period effect (systematic difference between periods) |
+$\tau_{t(i)}$ | Treatment effect (effect of assigned treatment) |
+$\eta_i$ | Patient random effect (between-patient variability) |
+$\epsilon_{ijk}$ | Residual error |
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Treatment effect estimate (within-patient contrast):
+\[
+\hat{\tau} = \bar{Y}_{\text{Treatment A}} - \bar{Y}_{\text{Treatment B}}
+\]
+
+Variance of treatment effect:
+\[
+\text{Var}(\hat{\tau}) = \frac{2\sigma^2}{n}
+\]
+
+Compared to parallel design:
+\[
+\text{Var}_{\text{parallel}} = \frac{4\sigma^2}{n}
+\]
+
+The crossover design achieves doubled efficiency ($2\sigma^2/n$ vs $4\sigma^2/n$) by eliminating between-patient variance.
+\end{frame}
+\begin{frame}{Assumptions in Crossover Designs}
+Crossover designs require specific assumptions for valid inference:
+
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Assumption} & \textbf{Definition} & \textbf{Testing Method} \\
+\midrowcolor
+No carryover effect | Treatment effect in period 2 not affected by treatment in period 1 | Statistical test, longer washout |
+Treatment effect constant | Same effect across periods | Period-by-treatment interaction test |
+No period effect | Outcomes same across periods in absence of treatment | Include period in model \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Testing for carryover effects:
+\[
+Y_{ijk} = \mu + \pi_k + \tau_{t(i)} + \lambda_{\text{carryover}} + \eta_i + \epsilon_{ijk}
+\]
+
+Test $H_0: \lambda_{\text{carryover}} = 0$ using $t$-test on carryover coefficient.
+
+If carryover is significant:
+\begin{center}
+\scalebox[0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Approach} & \textbf{Action} & \textbf{Implication} \\
+\midrowcolor
+Exclude period 2 | Use only first period data | Reduces to parallel design analysis |
+Longer washout | Increase washout period duration | Protocol modification for future studies \\
+Different design | Switch to parallel group design | Loss of efficiency \\
+\bottomrule
+\end{tabular}}
+\end{center}
+\end{frame}
+\begin{frame}{Limitations: The Carryover Effect}
+The carryover effect is the primary limitation of crossover designs. It occurs when the effect of a treatment administered in one period persists into the subsequent period, contaminating the treatment effect estimate.
+
+Causes of carryover effects:
+\begin{center}
+\scalebox[0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Cause} & \textbf{Example} & \textbf{Mitigation} \\
+\midrowcolor
+Pharmacological persistence | Long half-life drug (e.g., amiodarone) | Adequate washout period |
+Disease modification | Treatment alters disease course | Exclude period 2, use parallel design |
+Learning effects | Patients improve with practice | Randomized treatment order |
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Impact of carryover on analysis:
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+\node[draw,rectangle,fill=blue!20,minimum width=2.5cm,minimum height=1.2cm] (C) at (0,1) {Correct Treatment\\Effect};
+\node[draw,rectangle,fill=red!20,minimum width=2.5cm,minimum height=1.2cm] (L) at (5,1) {Biased Treatment\\Effect};
+\node at (0,-0.5) {Period 1 → Period 2: Clean comparison};
+\node at (5,-0.5) {Period 1 → Period 2: Treatment A effect persists into period 2};
+\end{tikzpicture}
+\end{center}
+
+In the presence of carryover:
+\[
+\hat{\tau}_{\text{observed}} = \tau_{\text{true}} + \lambda_{\text{carryover}}
+\]
+
+This bias invalidates the primary treatment comparison, which is why carryover testing is essential in crossover trial analysis.
+\end{frame}
+\section{Application Examples}
+\begin{frame}{Example: Antihypertensive Crossover Trial}
+Consider a crossover trial comparing two antihypertensive drugs:
+
+\textbf{Design}:
+\begin{center}
+\scalebox[0.75}{
+\begin{tabular}{@{}ll@{}}
+\toprule \textbf{Parameter} & \textbf{Value} \\
+\midrowcolor
+Number of patients | 50 |
+Treatment periods | 2 weeks each |
+Washout period | 2 weeks |
+Treatment A | Drug X (new formulation) |
+Treatment B | Drug Y (standard of care) \\
+Endpoint | Systolic blood pressure (mmHg) \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Results:
+\[
+\bar{Y}_X - \bar{Y}_Y = -4.2 \text{ mmHg} \quad (p < 0.01)
+\]
+
+Patient-level data structure:
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+\node[draw,rectangle,minimum width=4cm,minimum height=0.6cm] at (0,0) {};
+\node at (-2,0) {Patient 1};
+\node at (1.5,0) {Drug X: 138 mmHg};
+\node at (6,0) {Drug Y: 142 mmHg};
+\node[draw,rectangle,minimum width=4cm,minimum height=0.6cm] at (0,-1) {};
+\node at (-2,-1) {Patient 2};
+\node at (1.5,-1) {Drug Y: 145 mmHg};
+\node at (6,-1) {Drug X: 140 mmHg};
+\node at (0,-2) {$\vdots$};
+\end{tikzpicture}
+\end{center}
+
+Within-patient contrast: Drug X lowers SBP by 4.2 mmHg more than Drug Y.
+\end{frame}
+\begin{frame}{Crossover Design in LMIC Contexts}
+Crossover designs have particular relevance and challenges in African research settings:
+
+\textbf{Advantages for LMIC research}:
+\begin{center}
+\scalebox[0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Advantage} & \textbf{LMIC Relevance} & \textbf{Example} \\
+\midrowcolor
+Efficiency | Limited patient populations | Rare disease research |
+Within-patient control | Heterogeneous populations | Balancing across groups |
+Reduced sample size | Resource constraints | Cost-effective evaluation |
+\bottomrule
+end{tabular}}
+\end{center}
+
+\textbf{Challenges specific to LMICs}:
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Challenge} & \textbf{Impact} & \textbf{Mitigation} \\
+\midrowcolor
+Loss to follow-up | Period dropout breaks within-patient comparison | Intensive follow-up, mobile tracking |
+Mobile populations | Treatment sequence may be interrupted | Community engagement, remote monitoring |
+Washout adherence | Patients may not return for washout completion | Directly observed therapy, incentives \\
+\bottomrule
+end{tabular}}
+\end{center}
+
+Example: Antimalarial efficacy studies in Africa have used crossover designs when ethical and appropriate, allowing efficient comparison of drug efficacy within patients.
+\end{frame}
+\begin{frame}{Alternative Designs When Crossover Is Inappropriate}
+When crossover designs are not appropriate, alternative designs include:
+
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Design} & \textbf{When to Use} & \textbf{Sample Size Impact} \\
+\midrowcolor
+Parallel group | Curative treatments, long-term effects | Baseline (100\%) |
+Factorial | Multiple interventions, efficiency | Additive efficiency |
+Adaptive | Dynamic sample size adjustment | Potential savings |
+Stepped wedge | Cluster randomization needed | Individual + cluster considerations \\
+\bottomrule
+end{tabular}}
+\end{center}
+
+Parallel group design structure:
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+\node[draw,rectangle,fill=blue!20,minimum width=2cm,minimum height=1.2cm] (A) at (0,1) {Treatment A\\(n=100)};
+\node[draw,rectangle,fill=green!20,minimum width=2cm,minimum height=1.2cm] (B) at (4,1) {Treatment B\\(n=100)};
+\node at (0,-0.5) {Baseline assessment → Follow-up assessment};
+\node at (4,-0.5) {Baseline assessment → Follow-up assessment};
+\end{tikzpicture}
+\end{center}
+
+For non-curative conditions requiring long-term treatment evaluation, parallel designs with adequate follow-up are typically preferred over crossover designs.
+\end{frame}
+\section{Summary}
+\begin{frame}{Key Takeaways}
+\begin{enumerate}
+1. Clinical trials are prospective experiments evaluating interventions, with phases I-IV addressing different research questions from safety to post-marketing surveillance.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+2. Crossover designs compare treatments within the same participants, increasing efficiency by eliminating between-patient variability.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+3. Crossover designs require assumptions of no carryover effect, constant treatment effect, and no period effect for valid inference.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+4. The carryover effect is the primary limitation of crossover designs, occurring when treatment effects persist into subsequent periods.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+5. LMIC contexts present both opportunities (efficiency) and challenges (follow-up, washout adherence) for crossover trial implementation.
+\end{enumerate}
+
+\begin{center}
+\textbf{Questions for Further Discussion}
+\end{center}
+
+When is it appropriate to use crossover designs for evaluating public health interventions in resource-constrained settings? How should the efficiency gains of crossover designs be balanced against the risks of carryover effects and protocol deviations?
+\end{frame}
+\end{document}

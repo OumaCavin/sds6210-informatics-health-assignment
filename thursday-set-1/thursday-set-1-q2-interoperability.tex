@@ -1,0 +1,530 @@
+\documentclass[9pt,xcolor=dvipsnames,aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,graphicx,tikz,pgfplots,booktabs,siunitx}
+\usetikzlibrary{arrows,shapes,decorations.pathmorphing,decorations.pathreplacing,decorations.snapping,fit,positioning,calc,intersections,shapes.geometric,backgrounds}
+\usetheme[numbering=fraction,titleformat=smallcaps,sectionpage=progressbar]{metropolis}
+\usepackage[style=authoryear]{biblatex}
+\addbibresource{references.bib}
+\setbeamertemplate{bibliography item}[text]
+\graphicspath{{../assets/}}
+\DeclareMathOperator{\e}{e}
+\title{\Large SDS6210: Informatics for Health\\[0.3em]\small Thursday Set 1, Q2: Syntactic vs Semantic Interoperability}
+\author{\textbf{Cavin Otieno}}
+\institute{MSc Public Health Data Science\\Department of Health Informatics}
+\date{\today}
+\begin{document}
+\begin{frame}[noframenumbering,plain]
+    \maketitleslide
+\end{frame}
+\section{Definition and Conceptual Framework}
+\begin{frame}{Definition: Health Interoperability}
+Health interoperability refers to the ability of different information systems, devices, and applications to access, exchange, integrate, and cooperatively use data in a coordinated manner. Interoperability exists at multiple levels, from the technical transmission of data to the meaningful interpretation of shared information across organizational and professional boundaries.
+
+The Healthcare Information and Management Systems Society (HIMSS) defines interoperability as:
+\begin{center}
+"The ability of different information systems, devices and applications (or components of the same system or application) to access, exchange, integrate and cooperatively use data in order to enable the timely and seamless portability of information and improve the health and wellness of individuals and populations."
+\end{center}
+
+Interoperability is essential for:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Domain} & \textbf{Need} & \textbf{Example} \\
+\midrowcolor
+Clinical Care | Complete patient information | Emergency access to medication lists \\
+Public Health | Population health surveillance | Notifiable disease reporting to health authorities \\
+Research | Multi-site data sharing | Clinical trial data aggregation \\
+Administration | Administrative coordination | Insurance claims processing \\
+\bottomrule
+\end{tabular}}
+\end{center}
+\end{frame}
+\begin{frame}{The Interoperability Framework}
+Interoperability is conceptualized as a multi-layered framework:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+\node[draw,rectangle,fill=blue!20,minimum width=4cm,minimum height=1.2cm] (P) at (0,2) {\textbf{Pragmatic/Social}\\Trust, Governance, Policy};
+\node[draw,rectangle,fill=green!20,minimum width=4cm,minimum height=1.2cm] (S) at (0,0.5) {\textbf{Semantic}\\Meaning, Interpretation, Vocabulary};
+\node[draw,rectangle,fill=red!20,minimum width=4cm,minimum height=1.2cm] (Sy) at (0,-1) {\textbf{Syntactic}\\Format, Structure, Syntax};
+\node[draw,rectangle,fill=yellow!20,minimum width=4cm,minimum height=1.2cm] (F) at (0,-2.5) {\textbf{Foundational}\\Transport, Network, Security};
+\node[draw,ellipse,fill=purple!10,minimum width=6cm,minimum height=5.5cm] (I) at (0,-0.2) {};
+\node at (0,3) {\textbf{Interoperability Levels}};
+\end{tikzpicture}
+\end{center}
+
+\textbf{Foundational Interoperability}: Basic ability to exchange data between systems (transport, network connectivity)
+
+\textbf{Syntactic Interoperability**: Ability to understand the structure and format of exchanged data
+
+\textbf{Semantic Interoperability**: Ability to understand the meaning (interpretation) of exchanged data
+
+\textbf{Pragmatic/Social Interoperability**: Organizational and policy frameworks enabling data sharing
+
+This framework, developed by the American National Standards Institute (ANSI), provides a structured approach to understanding interoperability challenges and solutions.
+\end{frame}
+\section{Syntactic Interoperability}
+\begin{frame}{Syntactic Interoperability: Definition and Standards}
+Syntactic interoperability refers to the ability of systems to exchange data with a shared understanding of the structure and format of that data. At this level, systems can parse and process incoming data because they agree on the message format, data types, and transmission protocols.
+
+Key components of syntactic interoperability:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Component} & \textbf{Description} & \textbf{Example Standard} \\
+\midrowcolor
+Message Format | Structure of data elements | HL7 v2 message segments |
+Data Types | Type definitions (string, integer, date) | ISO 21090 data types |
+Transmission Protocol | Method of data exchange | TCP/IP, HTTPS, MLLP |
+Encoding | Representation of complex data | XML, JSON, HL7 ER7 \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Syntactic standards ensure that:
+\begin{itemize}
+\item Data elements can be parsed correctly
+\end{itemize}
+
+\begin{itemize}
+\item Message boundaries are understood
+\end{itemize}
+
+\begin{itemize}
+\item Data types are correctly interpreted
+\end{itemize}
+
+\begin{itemize}
+\item Error detection and handling is possible
+
+However, syntactic interoperability does not guarantee that different systems interpret the data elements consistently.
+\end{itemize}
+\end{frame}
+\begin{frame}{HL7 Version 2.x: The Dominant Syntactic Standard}
+HL7 v2.x (also known as HL7 Version 2) has been the most widely implemented health messaging standard for over 30 years. It uses a pipe-and-hat format (ASCII-based) for message encoding.
+
+Example HL7 v2 message segment:
+\begin{semiverbatim}
+MSH|^~\&|LABFACILITY|HOSPITAL|ORDERENTRY|RECEIVER|20240115||ORU^R01|MSG12345|P|2.5
+OBR|1|ORD12345^LAB|^^Serum Glucose||202401150800|202401151200||||||||LABPHY^SMITH^J||F
+OBX|1|NM|GLU^Glucose^LN||95|mg/dL|70-100|N|||F
+OBX|2|NM|HBA1C^Hemoglobin A1c^LN||6.2|%|<5.7|N|F|||20240115
+\end{semiverbatim}
+
+Message components:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Segment} & \textbf{Purpose} & \textbf{Example} \\
+\midrowcolor
+MSH | Message header | Sending/receiving application details |
+OBR | Order detail | Test order information, timing |
+OBX | Observation result | Laboratory value with reference range |
+\bottomrule
+\end{tabular}}
+\end{center}
+
+HL7 v2 advantages include widespread adoption and simplicity. Limitations include limited extensibility, lack of formal data model, and ambiguity in interpretation.
+\end{frame}
+\begin{frame}{HL7 FHIR: Modern Syntactic Interoperability}
+HL7 FHIR (Fast Healthcare Interoperability Resources) represents the modern standard for health data exchange, combining modern web technologies with healthcare data models.
+
+FHIR resources (JSON format):
+\begin{semiverbatim}
+{
+  "resourceType": "Observation",
+  "id": "glucose-result",
+  "status": "final",
+  "code": {
+    "coding": [{
+      "system": "http://loinc.org",
+      "code": "2345-7",
+      "display": "Glucose [Mass/volume] in Blood"
+    }]
+  },
+  "subject": {
+    "reference": "Patient/12345"
+  },
+  "effectiveDateTime": "2024-01-15T08:30:00Z",
+  "valueQuantity": {
+    "value": 95,
+    "unit": "mg/dL",
+    "system": "http://unitsofmeasure.org",
+    "code": "mg/dL"
+  },
+  "referenceRange": [{
+    "low": {"value": 70, "unit": "mg/dL"},
+    "high": {"value": 100, "unit": "mg/dL"}
+  }]
+}
+\end{semiverbatim}
+
+FHIR advantages:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}ll@{}}
+\toprule \textbf{Feature} & \textbf{Benefit} \\
+\midrowcolor
+RESTful API | Modern web-based data access |
+JSON/XML support | Developer-friendly formats |
+Resource-based model | Intuitive healthcare data representation |
+Built-in extensibility | Adaptable to local needs |
+\bottomrule
+\end{tabular}}
+\end{center}
+\end{frame}
+\section{Semantic Interoperability}
+\begin{frame}{Semantic Interoperability: Definition and Importance}
+Semantic interoperability represents the highest level of health information exchange, where systems can not only exchange data but also automatically interpret and use the exchanged information in the same way across different systems, organizations, and contexts. This requires standardized vocabularies, ontologies, and shared conceptual frameworks.
+
+Key requirements for semantic interoperability:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Requirement} & \textbf{Description} & \textbf{Example} \\
+\midrowcolor
+Standardized Vocabularies | Common terms for clinical concepts | ICD-11, SNOMED CT, LOINC |
+Ontologies | Logical relationships between concepts | Disease hierarchies, anatomy |
+Shared Meaning | Consensus on interpretation & Clinical guidelines, case definitions \\
+Reasoning Engines | Automated inference | Drug interaction checking, phenotype matching \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+With semantic interoperability:
+\begin{center}
+\begin{semiverbatim}
+System A sends:   Diagnosis = "Type 2 diabetes mellitus"
+System B receives and understands:  [SNOMED CT 44054006]
+                                   "Diabetes mellitus characterized by insulin resistance"
+                                   [Is-a] Diabetes mellitus [Is-a] Endocrine system disorder
+\end{semiverbatim}
+\end{center}
+
+Without semantic interoperability:
+\begin{center}
+\begin{semiverbatim}
+System A sends:   Diagnosis = "DM2"
+System B interprets:  ?? Unclear meaning, may not match "Type 2 diabetes mellitus"
+\end{semiverbatim}
+\end{center}
+\end{frame}
+\begin{frame}{SNOMED CT: The Global Clinical Terminology}
+SNOMED CT (Systematized Nomenclature of Medicine - Clinical Terms) is the most comprehensive multilingual health terminology, providing standardized clinical concepts with hierarchical relationships.
+
+SNOMED CT structure:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Component} & \textbf{Description} & \textbf{Example} \\
+\midrowcolor
+Clinical Findings | Diseases, signs, symptoms | Type 2 diabetes mellitus (44054006) |
+Procedures | Clinical activities | Blood glucose measurement (271061000) |
+Anatomical Sites | Body structures | Pancreas (11301005) |
+Substances | Medications, biologicals | Metformin (373873005) |
+\bottomrule
+\end{tabular}}
+\end{center}
+
+SNOMED CT hierarchy example (Type 2 Diabetes Mellitus):
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+\node[draw,rectangle,rounded corners,fill=blue!20,minimum width=3cm,minimum height=0.8cm] (DM) at (0,1.5) {Type 2 Diabetes Mellitus\\(44054006)};
+\node[draw,rectangle,rounded corners,fill=green!20,minimum width=2.5cm,minimum height=0.8cm] (DMG) at (-2.5,0) {Diabetes Mellitus\\(44054006)};
+\node[draw,rectangle,rounded corners,fill=yellow!20,minimum width=2.5cm,minimum height=0.8cm] (ED) at (2.5,0) {Endocrine Disorder\\(362969004)};
+\node[draw,rectangle,rounded corners,fill=red!20,minimum width=3cm,minimum height=0.8cm] (GD) at (0,-1.5) {Glucose Metabolism Disorder\\(127013009)};
+\draw[->,thick] (DM) -- (DMG) node[midway,left] {Is-a};
+\draw[->,thick] (DM) -- (ED) node[midway,right] {Is-a};
+\draw[->,thick] (DMG) -- (GD) node[midway,left] {Is-a};
+\end{tikzpicture}
+\end{center}
+\end{frame}
+\begin{frame}{ICD-11: International Classification of Diseases}
+ICD-11 (International Classification of Diseases, 11th Revision) is the World Health Organization's standard for disease classification, required for mortality coding and essential for epidemiological and health statistics.
+
+ICD-11 structure for diabetes:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Code} & \textbf{Description} & \textbf{Scope} \\
+\midrowcolor
+8E10 | Type 2 diabetes mellitus | Primary classification |
+8E10.0 | Type 2 diabetes mellitus without complications | Uncomplicated |
+8E10.1 | Type 2 diabetes mellitus with ketoacidosis | Acute complication |
+8E10.2 | Type 2 diabetes mellitus with renal complications | Chronic complication |
+8E10.Z | Type 2 diabetes mellitus, unspecified | Unspecified variant \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Key differences from ICD-10:
+\begin{itemize}
+\item Modernized, electronic-compatible structure
+\end{itemize}
+
+\begin{itemize}
+\item Over 14,000 diagnostic codes (vs. 12,000 in ICD-10)
+\end{itemize}
+
+\begin{itemize}
+\item Improved support for antimicrobial resistance coding
+\end{itemize}
+
+\begin{itemize}
+\item Electronic mortality data quality requirements
+\end{itemize}
+
+ICD-11 became effective for member states in January 2022, with transition ongoing in African countries.
+\end{frame}
+\begin{frame}{LOINC: Laboratory Test Standardization}
+LOINC (Logical Observation Identifiers Names and Codes) is the universal code system for identifying laboratory and clinical observations. It enables interoperability of laboratory results across different systems.
+
+LOINC structure for a laboratory test:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Component} & \textbf{Example} & \textbf{Purpose} \\
+\midrowcolor
+Component | Glucose | What is being measured |
+Property | Mass concentration | Type of quantity |
+Timing | Point in time | When measured |
+System | Blood | What the sample is from |
+Scale | Quantitative | Type of scale \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Example LOINC codes for glucose testing:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{4cm}@{}}
+\toprule \textbf{LOINC Code} & \textbf{Full Name} & \textbf{Use Case} \\
+\midrowcolor
+2345-7 | Glucose [Mass/volume] in Blood | Routine blood glucose |
+15074-8 | Glucose [Mass/volume] in Blood -- fasting | Fasting glucose |
+4548-4 | Glucose [Mass/volume] in Blood -- 2 hours post 75g oral glucose | OGTT, 2-hour \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+LOINC enables:
+\begin{itemize}
+\item Laboratory result exchange across different LIS and EHR systems
+\end{itemize}
+
+\begin{itemize}
+\item Comparison of results across studies and facilities
+\end{itemize}
+
+\begin{itemize}
+\item Meta-analysis of laboratory data from multiple sources
+\end{itemize}
+\end{frame}
+\section{Concrete Data Exchange Examples}
+\begin{frame}{Syntactic Exchange: HL7 v2 Example}
+Scenario: Laboratory system sending results to hospital EHR
+
+\begin{semiverbatim}
+MSH|^~\&|LABSYSTEM|HOSPITAL|EHR|HOSPITAL|20240115||ORU^R01|MSG001|P|2.5
+PID|1||PAT12345^^^HOSPITAL^MRN||MUKASA^JOHN||19750315|M
+OBR|1|ORD001^LAB|^^Serum Glucose||202401150800
+OBX|1|NM|15074-8^FASTING GLUCOSE^LN||7.2|mmol/L|3.9-5.6|H|F||202401150845
+OBX|2|NM|4548-4^GLUCOSE 2HR POST OGTT^LN||9.8|mmol/L|<7.8|H|F||202401151045
+\end{semiverbatim}
+
+Syntactic interpretation:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Element} & \textbf{Value} & \textbf{Syntactic Understanding} \\
+\midrowcolor
+Patient ID | PAT12345 | Can be stored in patient record |
+Test Name | Fasting Glucose | Can be displayed to user |
+Result | 7.2 mmol/L | Can be compared to reference range |
+Status | H (High) | Flagged as abnormal |
+\bottomrule
+end{tabular}}
+\end{center}
+
+Limitation: The receiving system does not necessarily understand that this patient has impaired fasting glucose or diabetes. The semantic meaning depends on local interpretation.
+\end{frame}
+\begin{frame}{Semantic Exchange: FHIR with Standard Vocabularies}
+Same scenario using FHIR with semantic interoperability:
+
+\begin{semiverbatim}
+{
+  "resourceType": "Bundle",
+  "type": "message",
+  "entry": [
+    {
+      "resource": {
+        "resourceType": "Patient",
+        "id": "patient-12345",
+        "identifier": [{"system": "http://hospital.org/mrn", "value": "PAT12345"}],
+        "name": [{"family": "MUKASA", "given": ["JOHN"]}],
+        "birthDate": "1975-03-15"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Observation",
+        "id": "obs-glucose",
+        "status": "final",
+        "code": {
+          "coding": [{"system": "http://loinc.org", "code": "15074-8", 
+                     "display": "Fasting glucose [Mass/volume] in Blood"}],
+          "text": "Fasting Blood Glucose"
+        },
+        "subject": {"reference": "Patient/patient-12345"},
+        "valueQuantity": {"value": 7.2, "unit": "mmol/L",
+                         "system": "http://unitsofmeasure.org", "code": "mmol/L"},
+        "referenceRange": [{"low": {"value": 3.9, "unit": "mmol/L"},
+                           "high": {"value": 5.6, "unit": "mmol/L"}}],
+        "interpretation": [{"coding": [{"system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                                       "code": "H", "display": "High"}]}]
+      }
+    }
+  ]
+}
+\end{semiverbatim}
+\end{frame}
+\begin{frame}{Semantic Interpretation}
+With semantic interoperability, the receiving system can:
+
+\textbf{Automated interpretation}:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Automated Action} & \textbf{Semantic Basis} & \textbf{Outcome} \\
+\midrowcolor
+Flag abnormal result | LOINC 15074-8 + Interpretation code H | Alerts care team |
+Calculate diabetes risk | Result value + reference range + patient age | Risk score update |
+Trigger care protocol | SNOMED CT concept for impaired fasting glucose | Care pathway initiation |
+Quality reporting | ICD-10 code mapping (R73.03) | Public health reporting |
+Cross-system comparison | Standardized units (mmol/L) | Population analytics \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Semantic interoperability enables:
+\begin{center}
+\begin{semiverbatim}
+From this single observation, multiple systems can:
+1. Clinical decision support → "Fasting glucose elevated - consider diabetes screening"
+2. Population health management → "Patient added to pre-diabetes registry"
+3. Research → "Subject eligible for diabetes prevention study"
+4. Quality metrics → "Reportable to diabetes surveillance system"
+5. Billing → "Appropriate ICD-10 code: R73.03 Impaired fasting glycemia"
+\end{semiverbatim}
+\end{center}
+\end{frame}
+\section{LMIC Context: Sub-Saharan Africa}
+\begin{frame}{Interoperability Challenges in African Health Systems}
+African health systems face unique interoperability challenges:
+
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Challenge} & \textbf{Impact} & \textbf{LMIC-Specific Factor} \\
+\midrowcolor
+Legacy Systems | Multiple incompatible systems | Donor-funded vertical programs |
+Terminology Fragmentation | No national terminology standards | Local codes without mapping |
+Infrastructure Limitations | Reduced interoperability capability | Limited connectivity |
+Human Resource Gaps | Implementation challenges | Limited informatics expertise \\
+Funding Constraints | Sustained interoperability investment difficult | Donor dependency \\
+\bottomrule
+end{tabular}}
+\end{center}
+
+Current state in many African countries:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Level} & \textbf{Status} & \textbf{Examples} \\
+\midrowcolor
+Syntactic | Mixed, evolving | DHIS2 for aggregate, HL7 for some lab systems |
+Semantic | Limited | Some LOINC adoption for labs, national ICD coding variable |
+Pragmatic | Developing | Data sharing agreements emerging, governance frameworks \\
+\bottomrule
+\end{tabular}}
+\end{center}
+\end{frame}
+\begin{frame}{Progress Toward Interoperability in Africa}
+Several initiatives are advancing interoperability in Africa:
+
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Initiative} & \textbf{Scope} & \textbf{Interoperability Focus} \\
+\midrowcolor
+Africa CDC Data Platform | Continental & Event-based surveillance, standard case definitions |
+OpenHIE | Regional/Country | Health information exchange architecture |
+DHIS2 with FHIR | National | Aggregate data, emerging semantic standards |
+IHE Africa Connectathon | Regional | Testing interoperability profiles \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Kenya's progress:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Area} & \textbf{Status} & \textbf{Next Steps} \\
+\midrowcolor
+Syntactic | DHIS2 widely adopted, HL7 for labs & FHIR adoption in new implementations \\
+Semantic | ICD-10 coding mandatory for reporting & LOINC for laboratory data, SNOMED CT pilot |
+Pragmatic | Data sharing frameworks emerging & National health information exchange policy \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Recommendations for advancing interoperability:
+\begin{itemize}
+\item Adopt FHIR for new implementations
+\end{itemize}
+
+\begin{itemize}
+\item Mandate LOINC for laboratory data exchange
+\end{itemize}
+
+\begin{itemize}
+\item Implement national health information exchange governance
+\end{itemize}
+
+\begin{itemize}
+\item Build local capacity in health informatics standards
+\end{itemize}
+\end{frame}
+\section{Summary}
+\begin{frame}{Key Takeaways}
+\begin{enumerate}
+1. Syntactic interoperability enables data exchange with shared structure and format, exemplified by HL7 v2 and FHIR.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+2. Semantic interoperability enables shared understanding of meaning through standardized vocabularies (SNOMED CT, ICD-11, LOINC).
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+3. HL7 and FHIR provide syntactic standards for data exchange; SNOMED CT and ICD-11 provide semantic standards for meaning.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+4. FHIR with standard vocabularies enables automated interpretation, decision support, and cross-system analytics.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+5. African health systems face legacy system, terminology, infrastructure, and capacity challenges in advancing interoperability.
+\end{enumerate}
+
+\begin{center}
+\textbf{Questions for Further Discussion}
+\end{center}
+
+How should African nations balance the need to upgrade to modern interoperability standards (FHIR, SNOMED CT) with the reality of limited resources and ongoing legacy system dependencies? What role should regional cooperation play in developing shared interoperability frameworks?
+\end{frame}
+\end{document}

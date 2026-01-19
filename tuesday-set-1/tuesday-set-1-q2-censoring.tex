@@ -1,0 +1,415 @@
+\documentclass[9pt,xcolor=dvipsnames,aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,graphicx,tikz,pgfplots,booktabs,siunitx}
+\usetikzlibrary{arrows,shapes,decorations.pathmorphing,decorations.pathreplacing,decorations.snapping,fit,positioning,calc,intersections,shapes.geometric,backgrounds}
+\usetheme[numbering=fraction,titleformat=smallcaps,sectionpage=progressbar]{metropolis}
+\usepackage[style=authoryear]{biblatex}
+\addbibresource{references.bib}
+\setbeamertemplate{bibliography item}[text]
+\graphicspath{{../assets/}}
+\DeclareMathOperator{\e}{e}
+\title{\Large SDS6210: Informatics for Health\\[0.3em]\small Tuesday Set 1, Q2: Censoring in Health Data Analysis}
+\author{\textbf{Cavin Otieno}}
+\institute{MSc Public Health Data Science\\Department of Health Informatics}
+\date{\today}
+\begin{document}
+\begin{frame}[noframenumbering,plain]
+    \maketitleslide
+\end{frame}
+\section{Formal Definition of Censoring}
+\begin{frame}{Formal Definition of Censoring}
+Censoring is a phenomenon in survival analysis and longitudinal studies where the exact time to an event of interest is not known for some study participants. Instead of observing the actual event time, we only know that the event occurred after a certain time point (right censoring) or before a certain time point (left censoring), or within a defined interval (interval censoring).
+
+Formally, let $T$ be the true (unobserved) time to the event of interest, and let $C$ be the censoring time (the time at which the study ends or the subject is lost to follow-up). The observed data for each subject consists of:
+\[
+Y = \min(T, C)
+\]
+\[
+\delta = \mathbb{1}(T \leq C) = 
+\begin{cases}
+1 & \text{if the event is observed (uncensored)} \\
+0 & \text{if the subject is censored}
+\end{cases}
+\]
+
+The observed survival time $Y$ is thus a truncated and/or censored version of the true event time $T$. The censoring indicator $\delta$ provides essential information about whether the event was actually observed.
+
+In epidemiological studies, censoring is not a "failure" of the study design but rather an inherent characteristic of time-to-event data that must be properly accounted for in the analysis.
+\end{frame}
+\begin{frame}{Why Censoring Occurs}
+Censoring arises from practical and ethical constraints in epidemiological research:
+
+\begin{center}
+\scalebox[0.8]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Reason} & \textbf{Description} & \textbf{Example} \\
+\midrowcolor
+Study Termination & Fixed study duration with scheduled end date & 5-year follow-up period ending before all participants experience the event \\
+Loss to Follow-Up & Participants withdraw, relocate, or are unreachable & HIV cohort participants who miss scheduled visits and cannot be traced \\
+Competing Risks & Subject experiences a different event first & Death from cardiovascular disease before cancer recurrence \\
+Administrative Censoring & Study protocols specify censoring rules & Participants switching to non-study treatment are censored at switch time \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+In LMIC contexts, additional censoring mechanisms include:
+\begin{itemize}
+\item \textbf{Migration}: Urban-to-rural movement making follow-up impossible
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Resource Constraints}: Inability to maintain intensive follow-up schedules
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Conflict and Displacement}: Civil unrest disrupting study operations
+\end{itemize}
+
+Understanding why censoring occurs is essential for determining whether it is informative or non-informative.
+\end{frame}
+\section{Types of Censoring}
+\begin{frame}{Right Censoring}
+Right censoring occurs when we know that the event occurred after a certain time point, but we do not know the exact time. This is the most common form of censoring in epidemiological studies.
+
+There are three types of right censoring:
+
+\textbf{Type I (Fixed) Censoring}:
+The study ends at a predetermined time $\tau$. For subjects who have not experienced the event by time $\tau$, we observe $Y = \tau$ and $\delta = 0$.
+
+\textbf{Type II Censoring}:
+The study continues until a predetermined number of events $d$ have occurred. Subjects who have not experienced the event by the time the $d$-th event occurs are censored at that time.
+
+\textbf{Progressive (Type III) Censoring}:
+Subjects enter the study at different times (random entry) and are followed until the common study end date or loss to follow-up.
+
+The mathematical representation for right-censored data:
+\[
+\text{Observed time } Y_i = \min(T_i, C_i)
+\]
+\[
+\text{Censoring indicator } \delta_i = 
+\begin{cases}
+1 & \text{if } T_i \leq C_i \text{ (event observed)} \\
+0 & \text{if } T_i > C_i \text{ (right censored)}
+\end{cases}
+\]
+\end{frame}
+\begin{frame}{Left Censoring}
+Left censoring occurs when we know that the event occurred before a certain time point, but the exact time is unknown. This situation arises when the study cannot detect the event at its true inception.
+
+Formal definition:
+\[
+Y_i = \max(T_i, L_i)
+\]
+\[
+\delta_i = 
+\begin{cases}
+1 & \text{if } T_i > L_i \text{ (known to exceed lower bound)} \\
+0 & \text{if } T_i \leq L_i \text{ (left censored)}
+\end{cases}
+\]
+
+Examples of left censoring in epidemiology:
+\begin{itemize}
+\item \textbf{Infection timing}: A participant tests HIV-positive at enrollment, but infection occurred at an unknown earlier time
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Disease onset}: Memory impairment may have begun before clinical diagnosis was made
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Environmental exposure**: Exposure to a contaminant may have begun before measurement devices were deployed</li>
+</ul>
+
+Left censoring requires careful consideration in analysis because it affects the left tail of the survival distribution, which may be of primary scientific interest (e.g., time from infection to diagnosis).
+\end{frame}
+\begin{frame}{Interval Censoring}
+Interval censoring occurs when we know only that the event occurred within a defined time interval $[L_i, R_i]$, but the exact time is unknown. This is common when assessment of event status occurs periodically rather than continuously.
+
+Mathematical representation:
+\[
+L_i < T_i < R_i
+\]
+where $L_i$ is the last time the subject was known event-free and $R_i$ is the first time the event was detected.
+
+Special cases of interval censoring:
+\begin{itemize}
+\item \textbf{Left-censored}: $L_i = 0$ (event occurred before first observation)
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Right-censored}: $R_i = \infty$ (event not observed during study period)
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Exactly observed}: $L_i = R_i$ (event time known exactly)
+\end{itemize}
+
+Interval censoring in public health:
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Application} & \textbf{Interval Definition} \\
+\midrowcolor
+Annual HIV testing & Time since last negative test to first positive test \\
+Cervical cancer screening & Interval between normal and abnormal Pap results \\
+TB treatment outcome & Time between treatment start and sputum conversion confirmation \\
+\bottomrule
+\end{tabular}}
+\end{center}
+\end{frame}
+\begin{frame}{Informative vs Non-Informative Censoring}
+The distinction between informative and non-informative censoring is fundamental to valid survival analysis:
+
+\textbf{Non-Informative Censoring}:
+Censoring is non-informative if the probability of being censored at time $t$ depends only on the observed data up to time $t$, not on the unobserved future event time. Mathematically:
+\[
+P(C > t + \Delta t | T > t, C > t) = P(C > t + \Delta t | T > t)
+\]
+This means that subjects who remain in the study are representative of those who have not yet experienced the event.
+
+\textbf{Informative Censoring}:
+Censoring is informative if the probability of being censored is related to the underlying event time. If subjects with worse prognosis are more likely to be lost to follow-up, the censored observations carry information about unobserved event times.
+
+Implications for analysis:
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Censoring Type} & \textbf{Analysis Implication} & \textbf{Mitigation Strategy} \\
+\midrowcolor
+Non-informative & Standard methods (Kaplan-Meier, Cox) valid & Complete-case analysis acceptable \\
+Informative & Standard methods biased & Sensitivity analyses, joint models, inverse probability weighting \\
+\bottomrule
+\end{tabular}}
+\end{center}
+\end{frame}
+\section{Mathematical Framework}
+\begin{frame}{Survival Function with Censoring}
+The survival function $S(t)$ represents the probability of surviving beyond time $t$:
+\[
+S(t) = P(T > t) = 1 - F(t)
+\]
+where $F(t)$ is the cumulative distribution function of the event time.
+
+For censored data, we estimate $S(t)$ using the Kaplan-Meier (product-limit) estimator:
+\[
+\hat{S}(t) = \prod_{t_i \leq t} \left(1 - \frac{d_i}{n_i}\right)
+\]
+where:
+\begin{itemize}
+\item $t_i$ are the ordered event times
+\end{itemize}
+
+\begin{itemize}
+\item $d_i$ is the number of events at time $t_i$
+\end{itemize}
+
+\begin{itemize}
+\item $n_i$ is the number of subjects at risk just before time $t_i$
+\end{itemize}
+
+The variance of the Kaplan-Meier estimator (Greenwood's formula):
+\[
+\widehat{\text{Var}}[\hat{S}(t)] = [\hat{S}(t)]^2 \sum_{t_i \leq t} \frac{d_i}{n_i(n_i - d_i)}
+\]
+
+For censored data, the "number at risk" $n_i$ must account for subjects who have been censored before time $t_i$, ensuring that censored observations contribute information for the time periods during which they were observed.
+\end{frame}
+\begin{frame}{Likelihood Function with Censoring Indicator}
+The likelihood function for censored survival data combines information from both observed events and censored observations. For subject $i$ with observed time $Y_i$ and censoring indicator $\delta_i$:
+
+\[
+L_i(\theta) = 
+\begin{cases}
+f(Y_i; \theta) & \text{if } \delta_i = 1 \text{ (event observed)} \\
+S(Y_i; \theta) & \text{if } \delta_i = 0 \text{ (censored)}
+\end{cases}
+\]
+
+The full likelihood for $n$ independent subjects:
+\[
+L(\theta) = \prod_{i=1}^{n} \left[f(Y_i; \theta)\right]^{\delta_i} \left[S(Y_i; \theta)\right]^{1-\delta_i}
+\]
+
+The log-likelihood is:
+\[
+\ell(\theta) = \sum_{i=1}^{n} \left[ \delta_i \log f(Y_i; \theta) + (1 - \delta_i) \log S(Y_i; \theta) \right]
+\]
+
+For the exponential distribution $f(t; \lambda) = \lambda e^{-\lambda t}$, $S(t; \lambda) = e^{-\lambda t}$:
+\[
+\ell(\lambda) = \sum_{i=1}^{n} \left[ \delta_i (\log \lambda - \lambda Y_i) + (1 - \delta_i) (-\lambda Y_i) \right] = \sum_{i=1}^{n} \left[ \delta_i \log \lambda - \lambda Y_i \right]
+\]
+
+Maximizing this likelihood yields the MLE: $\hat{\lambda} = \frac{\sum \delta_i}{\sum Y_i} = \frac{\text{Number of events}}{\text{Total person-time}}$
+\end{frame}
+\begin{frame}{Derivation: How Censoring Enters the Likelihood}
+To understand how censoring enters the likelihood, consider the contribution of a single censored observation. Let $T$ be the true event time and $C$ be the censoring time. The observed data is $Y = \min(T, C)$ with $\delta = \mathbb{1}(T \leq C)$.
+
+For a censored observation ($\delta = 0$), we know $T > Y$. The contribution to the likelihood is:
+\[
+P(T > Y) = S(Y)
+\]
+
+For an observed event ($\delta = 1$), we know $T = Y$. The contribution to the likelihood is:
+\[
+P(T = Y) = f(Y) \quad \text{(for continuous time, this is a density)}
+\]
+
+Thus, the general likelihood contribution is:
+\[
+L_i = [f(Y_i)]^{\delta_i} [S(Y_i)]^{1-\delta_i}
+\]
+
+This formulation correctly weights:
+\begin{itemize}
+\item Event times contribute through the density $f(Y_i)$, reflecting the probability of the event occurring exactly at that time
+\end{itemize}
+
+\begin{itemize}
+\item Censored times contribute through the survival function $S(Y_i)$, reflecting the probability of surviving past the censoring time
+\end{itemize}
+
+For non-informative censoring, this likelihood is valid because the censoring mechanism depends only on the observed data (through $Y_i$) and not on the unobserved $T_i$.
+\end{frame}
+\section{Epidemiological Interpretation}
+\begin{frame}{Interpretation in Epidemiological Studies}
+Censoring has important implications for the interpretation of epidemiological findings:
+
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Study Design} & \textbf{Censoring Pattern} & \textbf{Interpretation Consideration} \\
+\midrowcolor
+Cohort Study & Administrative at study end & Those censored represent the surviving population at that time \\
+Case-Cohort & Time-dependent entry and exit & Exposure-outcome relationship conditional on remaining at risk \\
+Competing Risks & Event-specific censoring & Cause-specific hazards require careful interpretation \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Critical considerations for interpreting results with censored data:
+\begin{itemize}
+\item \textbf{At-risk interpretation}: The Kaplan-Meier estimator and Cox model estimate effects conditional on remaining event-free
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Generalizability}: Censoring patterns may differ between study population and target population
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Selection bias}: Informative censoring can lead to biased estimates of survival and covariate effects
+\end{itemize}
+
+Example: In a 5-year HIV survival study in Kenya, participants who migrate to urban areas for employment may have different survival probabilities than those who remain. If migration is related to both the exposure and outcome, censoring due to migration may be informative.
+\end{frame}
+\begin{frame}{Example: HIV Survival Analysis with Censoring}
+Consider a cohort of 500 HIV-positive adults initiating antiretroviral therapy in Kenya:
+
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Outcome} & \textbf{Number} & \textbf{Percentage} \\
+\midrowcolor
+Event observed (death) & 85 & 17.0\% \\
+Right-censored (study end) & 320 & 64.0\% \\
+Lost to follow-up & 70 & 14.0\% \\
+Transferred out & 25 & 5.0\% \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+The likelihood contributions:
+\begin{itemize}
+\item For 85 deaths: contribute $f(t_i; \theta)$ to likelihood
+\end{itemize}
+
+\begin{itemize}
+\item For 320 administratively censored: contribute $S(5\text{ years}; \theta)$
+\end{itemize}
+
+\begin{itemize}
+\item For 70 lost to follow-up: contribute $S(t_{\text{LFU}}; \theta)$
+\end{itemize}
+
+The Kaplan-Meier estimate at 5 years:
+\[
+\hat{S}(5) = \prod_{t_i \leq 5} \left(1 - \frac{d_i}{n_i}\right)
+\]
+where $n_i$ decreases by both deaths and losses to follow-up at each time point.
+
+If losses to follow-up are informative (sicker patients more likely to be lost), the observed survival may overestimate true survival. Sensitivity analyses using different assumptions about survival of censored patients should be conducted.
+\end{frame}
+\begin{frame}{Addressing Censoring in LMIC Research}
+In low-resource settings, censoring poses particular challenges due to:
+
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Challenge} & \textbf{Impact} & \textbf{Mitigation Strategy} \\
+\midrowcolor
+High LTFU rates & Reduced power, potential bias & Intensive tracing, mobile phone follow-up, multiple imputation \\
+Mobile populations & Administrative censoring at last contact & Active surveillance, community-based tracking \\
+Weak civil registration & Inability to ascertain vital status & Linkage attempts, proxy outcomes, sensitivity analysis \\
+Donor-driven timelines & Early study termination & Protocol design with adequate follow-up period \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Statistical methods for addressing censoring:
+\begin{itemize}
+\item \textbf{Inverse Probability of Censoring Weights (IPCW)**: Weights observations by inverse probability of remaining uncensored
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Joint models**: Simultaneously model survival and censoring processes
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Rank-based tests**: Wilcoxon-type tests that account for censoring
+\end{itemize}
+
+\begin{itemize}
+\item \textbf{Sensitivity analysis**: Vary assumptions about survival of censored patients
+\end{itemize}
+\end{frame}
+\section{Summary}
+\begin{frame}{Key Takeaways}
+\begin{enumerate}
+1. Censoring occurs when the exact event time is unknown, and the observed data consists of $Y = \min(T, C)$ with indicator $\delta = \mathbb{1}(T \leq C)$.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+2. Right censoring (event after censoring time) is most common; left and interval censoring also occur in epidemiological research.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+3. The likelihood function combines $f(Y_i)$ for observed events and $S(Y_i)$ for censored observations.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+4. Non-informative censoring allows valid estimation with standard methods; informative censoring requires special techniques.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+5. In LMICs, high loss to follow-up, mobile populations, and weak civil registration create substantial censoring challenges requiring proactive mitigation.
+\end{enumerate}
+
+\begin{center}
+\textbf{Questions for Further Discussion}
+\end{center}
+
+How should researchers balance the need for complete follow-up against practical constraints in resource-limited settings? What criteria should guide decisions about acceptable levels and types of censoring in epidemiological research?
+\end{frame}
+\end{document}

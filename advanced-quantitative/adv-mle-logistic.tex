@@ -1,0 +1,435 @@
+\documentclass[9pt,xcolor=dvipsnames,aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,graphicx,tikz,pgfplots,booktabs,siunitx}
+\usetikzlibrary{arrows,shapes,decorations.pathmorphing,decorations.pathreplacing,decorations.snapping,fit,positioning,calc,intersections,shapes.geometric,backgrounds}
+\usetheme[numbering=fraction,titleformat=smallcaps,sectionpage=progressbar]{metropolis}
+\usepackage[style=authoryear]{biblatex}
+\addbibresource{references.bib}
+\setbeamertemplate{bibliography item}[text]
+\graphicspath{{../assets/}}
+\DeclareMathOperator{\e}{e}
+\title{\Large SDS6210: Informatics for Health\\[0.3em]\small Advanced Quantitative: Maximum Likelihood Estimation and Logistic Regression}
+\author{\textbf{Cavin Otieno}}
+\institute{MSc Public Health Data Science\\Department of Health Informatics}
+\date{\today}
+\begin{document}
+\begin{frame}[noframenumbering,plain]
+    \maketitleslide
+\end{frame}
+\section{Maximum Likelihood Estimation: Fundamentals}
+\begin{frame}{Definition: Maximum Likelihood Estimation}
+Maximum Likelihood Estimation (MLE) is a general statistical method for estimating unknown parameters of a probability distribution. The MLE finds the parameter values that maximize the probability (likelihood) of observing the actual sample data.
+
+For a sample of independent observations $x_1, x_2, \ldots, x_n$ from a distribution with probability density function $f(x;\theta)$ parameterized by $\theta$, the likelihood function is:
+
+\[
+L(\theta) = \prod_{i=1}^{n} f(x_i;\theta)
+\]
+
+The log-likelihood is computationally preferred:
+
+\[
+\ell(\theta) = \log L(\theta) = \sum_{i=1}^{n} \log f(x_i;\theta)
+\]
+
+The MLE $\hat{\theta}$ is:
+
+\[
+\hat{\theta} = \arg\max_{\theta} \ell(\theta)
+\]
+
+MLE properties under regularity conditions:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Property} & \textbf{Statement} & \textbf{Implication} \\
+\midrowcolor
+Consistency | $\hat{\theta} \xrightarrow{p} \theta$ as $n \to \infty$ | Consistent with true parameter |
+Asymptotic normality | $\sqrt{n}(\hat{\theta} - \theta) \xrightarrow{d} N(0, I^{-1}(\theta))$ | Normal approximation for inference |
+Efficiency | Achieves Cramér-Rao lower bound | Best unbiased estimator asymptotically \\
+\bottomrule
+end{tabular}}
+\end{center}
+\end{frame}
+\begin{frame}{Likelihood Function: Binary Outcome Example}
+Consider $n$ independent binary observations $y_1, y_2, \ldots, y_n$ where $y_i \sim \text{Bernoulli}(p)$. The likelihood is:
+
+\[
+L(p) = \prod_{i=1}^{n} p^{y_i} (1-p)^{1-y_i}
+\]
+
+For a sample with $k$ successes and $n-k$ failures:
+
+\[
+L(p) = p^k (1-p)^{n-k}
+\]
+
+The log-likelihood:
+
+\[
+\ell(p) = k \log p + (n-k) \log (1-p)
+\]
+
+Differentiating with respect to $p$:
+
+\[
+\frac{d\ell}{dp} = \frac{k}{p} - \frac{n-k}{1-p}
+\]
+
+Setting to zero and solving:
+
+\[
+\frac{k}{p} = \frac{n-k}{1-p} \implies k(1-p) = p(n-k) \implies k - kp = pn - pk \implies k = pn \implies \hat{p} = \frac{k}{n}
+\]
+
+The MLE of the Bernoulli probability is the sample proportion, which is the intuitive and correct estimate.
+\end{frame}
+\begin{frame}{Score Function and Information Matrix}
+The score function (first derivative of log-likelihood) provides the basis for estimation:
+
+\[
+U(\theta) = \frac{\partial \ell(\theta)}{\partial \theta}
+\]
+
+The Fisher information matrix quantifies information about parameters:
+
+\[
+I(\theta) = -\frac{\partial^2 \ell(\theta)}{\partial \theta \partial \theta^T} = E\left[\left(\frac{\partial \ell}{\partial \theta}\right)\left(\frac{\partial \ell}{\partial \theta}\right)^T\right]
+\]
+
+For scalar parameter $\theta$:
+
+\[
+\text{Var}(\hat{\theta}) \approx \frac{1}{I(\theta)} = \frac{1}{-E\left[\frac{\partial^2 \ell}{\partial \theta^2}\right]}
+\]
+
+Example: Bernoulli distribution
+\[
+I(p) = \frac{n}{p(1-p)}
+\]
+\[
+\text{Var}(\hat{p}) \approx \frac{p(1-p)}{n}
+\]
+
+The standard error is estimated as:
+\[
+\widehat{\text{SE}}(\hat{p}) = \sqrt{\frac{\hat{p}(1-\hat{p})}{n}}
+\]
+\end{frame}
+\section{MLE for Logistic Regression}
+\begin{frame}{Likelihood Function for Logistic Regression}
+For logistic regression with binary outcomes $y_i \in \{0,1\}$ and covariates $\mathbf{x}_i = (x_{i1}, \ldots, x_{ip})$:
+
+The probability model:
+\[
+P(Y_i = 1|\mathbf{x}_i; \boldsymbol{\beta}) = p_i = \frac{\exp(\beta_0 + \beta_1 x_{i1} + \cdots + \beta_p x_{ip})}{1 + \exp(\beta_0 + \beta_1 x_{i1} + \cdots + \beta_p x_{ip})}
+\]
+
+The likelihood function:
+\[
+L(\boldsymbol{\beta}) = \prod_{i=1}^{n} p_i^{y_i} (1-p_i)^{1-y_i}
+\]
+
+The log-likelihood:
+\[
+\ell(\boldsymbol{\beta}) = \sum_{i=1}^{n} \left[y_i \log p_i + (1-y_i) \log(1-p_i)\right]
+\]
+
+In terms of the logit function:
+\[
+\ell(\boldsymbol{\beta}) = \sum_{i=1}^{n} \left[y_i (\mathbf{x}_i^T \boldsymbol{\beta}) - \log(1 + \exp(\mathbf{x}_i^T \boldsymbol{\beta}))\right]
+\]
+\end{frame}
+\begin{frame}{Score Equation and Estimation}
+The score function for logistic regression:
+
+\[
+U(\boldsymbol{\beta}) = \frac{\partial \ell}{\partial \boldsymbol{\beta}} = \sum_{i=1}^{n} (y_i - p_i) \mathbf{x}_i = \mathbf{0}
+\]
+
+The observed information matrix:
+
+\[
+I(\boldsymbol{\beta}) = -\frac{\partial^2 \ell}{\partial \boldsymbol{\beta} \partial \boldsymbol{\beta}^T} = \sum_{i=1}^{n} p_i (1-p_i) \mathbf{x}_i \mathbf{x}_i^T
+\]
+
+Estimation procedure (Newton-Raphson algorithm):
+\[
+\boldsymbol{\beta}^{(t+1)} = \boldsymbol{\beta}^{(t)} + I^{-1}(\boldsymbol{\beta}^{(t)}) U(\boldsymbol{\beta}^{(t)})
+\]
+
+Convergence criteria:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Criterion} & \textbf{Threshold} & \textbf{Interpretation} \\
+\midrowcolor
+Change in log-likelihood | $< 10^{-6}$ | Sufficiently stable |
+Change in coefficients | $< 10^{-4}$ | Converged estimates |
+Maximum iterations | 25-100 | Prevents non-convergence \\
+\bottomrule
+\end{tabular}}
+\end{center}
+\end{frame}
+\begin{frame}{Example: Estimating Logistic Regression Coefficients}
+Consider a study of factors associated with hospital readmission ($n=500$ patients):
+
+Model:
+\[
+\log\left(\frac{P(\text{readmission})}{1-P(\text{readmission})}\right) = \beta_0 + \beta_1 \times \text{Age}_{10} + \beta_2 \times \text{PriorHosp}
+\]
+
+Observed data:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Covariate} & \textbf{Coefficient ($\hat{\beta}$)} & \textbf{Standard Error} \\
+\midrowcolor
+Intercept ($\beta_0$) | -2.85 | 0.35 |
+Age (per 10 years, $\beta_1$) | 0.42 | 0.08 |
+Prior hospitalization ($\beta_2$) | 0.65 | 0.22 \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Likelihood:
+\[
+\ell(\boldsymbol{\beta}) = \sum_{i=1}^{500} \left[y_i (\beta_0 + \beta_1 \text{Age}_{10i} + \beta_2 \text{PriorHosp}_i) - \log(1 + \exp(\beta_0 + \beta_1 \text{Age}_{10i} + \beta_2 \text{PriorHosp}_i))\right]
+\]
+
+The MLE was obtained after 8 Newton-Raphson iterations with log-likelihood convergence to $10^{-8}$.
+\end{frame}
+\begin{frame}{Interpretation of Logistic Regression Coefficients}
+The exponentiated coefficients have direct interpretation as adjusted odds ratios:
+
+For continuous predictor (Age, per 10 years):
+\[
+\exp(\hat{\beta}_1) = \exp(0.42) = 1.52
+\]
+
+Interpretation:
+\[
+\text{OR} = \frac{\text{Odds of readmission at age } a+10}{\text{Odds of readmission at age } a} = 1.52
+\]
+
+Each 10-year increase in age is associated with a 52\% increase in the odds of readmission, adjusting for prior hospitalization.
+
+For binary predictor (Prior hospitalization):
+\[
+\exp(\hat{\beta}_2) = \exp(0.65) = 1.92
+\]
+
+Interpretation:
+\[
+\text{OR} = \frac{\text{Odds of readmission with prior hospitalization}}{\text{Odss of readmission without prior hospitalization}} = 1.92
+\]
+
+Patients with a prior hospitalization have 1.92 times higher odds of readmission, adjusting for age.
+
+95\% confidence intervals:
+\[
+\text{OR}_j \in \left[\exp\left(\hat{\beta}_j - 1.96 \times \widehat{\text{SE}}\right), \exp\left(\hat{\beta}_j + 1.96 \times \widehat{\text{SE}}\right)\right]
+\]
+\end{frame}
+\section{Public Health Applications}
+\begin{frame}{MLE in Public Health Research}
+MLE provides the statistical foundation for most public health regression analyses:
+
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Application} & \textbf{Model} & \textbf{Parameter of Interest} \\
+\midrowcolor
+Disease risk factors | Logistic regression | Adjusted odds ratios |
+Survival analysis | Cox proportional hazards | Hazard ratios |
+Count outcomes | Poisson/negative binomial regression | Incidence rate ratios |
+Time series | ARIMA models | Lag effects, seasonality \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Example: Identifying risk factors for diabetes in Kenya
+\[
+\log\left(\frac{P(\text{diabetes})}{1-P(\text{diabetes})}\right) = \beta_0 + \beta_1 \text{BMI} + \beta_2 \text{Age} + \beta_3 \text{PhysicalActivity} + \beta_4 \text{Income}
+\]
+
+MLE estimates from a sample of 5,000 adults:
+\[
+\begin{aligned}
+\hat{\beta}_1 &= 0.12 \quad (\text{BMI: OR} = 1.13 \text{ per unit}) \\
+\hat{\beta}_2 &= 0.05 \quad (\text{Age: OR} = 1.05 \text{ per year}) \\
+\hat{\beta}_3 &= -0.35 \quad (\text{Physical activity: OR} = 0.70) \\
+\hat{\beta}_4 &= -0.02 \quad (\text{Income: OR} = 0.98)
+\end{aligned}
+\]
+
+Public health interpretation: Physical activity has the strongest protective effect, with active individuals having 30\% lower odds of diabetes.
+\end{frame}
+\begin{frame}{Model Building and Selection in MLE Framework}
+Variable selection methods within the MLE framework:
+
+\textbf{Likelihood Ratio Test}:
+\[
+\text{LR} = -2(\ell_{\text{reduced}} - \ell_{\text{full}}) \sim \chi^2_{df_2 - df_1}
+\]
+
+Tests whether additional variables significantly improve model fit.
+
+\textbf{Akaike Information Criterion (AIC)}:
+\[
+\text{AIC} = -2\ell + 2p
+\]
+where $p$ is the number of parameters. Lower AIC indicates better fit with penalty for complexity.
+
+\textbf{Bayesian Information Criterion (BIC)}:
+\[
+\text{BIC} = -2\ell + p \log n
+\]
+Stronger penalty for model complexity, particularly useful for large samples.
+
+Comparison of nested models:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Model} & \textbf{Log-Likelihood} & \textbf{AIC} \\
+\midrowcolor
+Age only | -342.5 | 687.0 |
+Age + BMI | -325.2 | 654.4 |
+Age + BMI + Physical Activity | -310.8 | 625.6 |
+Age + BMI + Physical Activity + Income | -308.5 | 623.0 \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+The model with Age, BMI, and Physical Activity is selected based on substantial AIC improvement from adding Physical Activity, with minimal improvement from adding Income.
+\end{frame}
+\begin{frame}{Goodness of Fit Assessment}
+Assessing model fit in the MLE framework:
+
+\textbf{Hosmer-Lemeshow Test}:
+\[
+\chi^2 = \sum_{g=1}^{G} \frac{(O_g - E_g)^2}{E_g(1 - \frac{E_g}{n_g})}
+\]
+where groups are formed by predicted probabilities. Non-significant result indicates adequate fit.
+
+\textbf{Deviance}:
+\[
+D = -2(\ell_{\text{fitted}} - \ell_{\text{saturated}})
+\]
+Lower deviance indicates better fit. Compare to $\chi^2_{n-p}$ distribution.
+
+\textbf{Pseudo R-squared}:
+\[
+R^2_{\text{McFadden}} = 1 - \frac{\ell_{\text{fitted}}}{\ell_{\text{null}}}
+\]
+Values of 0.2-0.4 indicate good fit for logistic regression.
+
+Receiver Operating Characteristic (ROC) curve:
+\[
+\text{AUC} = \int_0^1 \text{TPR}(\text{FPR}) \, d(\text{FPR})
+\]
+AUC = 0.82 indicates excellent discriminative ability.
+\end{frame}
+\section{LMIC Context: Sub-Saharan Africa}
+\begin{frame}{MLE in African Public Health Research}
+MLE-based methods are increasingly used in African health research:
+
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Application} & \textbf{Setting} & \textbf{Example} \\
+\midrowcolor
+Risk factor analysis | DHS surveys | Identifying predictors of child stunting \\
+Treatment evaluation | Clinical trials | Artemisinin combination therapy efficacy \\
+Survival analysis | Cohort studies | HIV treatment outcomes, mortality prediction \\
+Spatial analysis | Disease mapping & Malaria risk factors across districts \\
+\bottomrule
+end{tabular}}
+\end{center}
+
+Example: Risk factors for malaria in under-5 children (Kenya DHS 2022)
+
+\[
+\log\left(\frac{P(\text{positive RDT})}{1-P(\text{positive RDT})}\right) = \beta_0 + \beta_1 \text{Age} + \beta_2 \text{NetUse} + \beta_3 \text{Education} + \beta_4 \text{Wealth}
+\]
+
+Results:
+\[
+\begin{aligned}
+\hat{\beta}_1 &= -0.08 \quad (\text{OR} = 0.92 \text{ per 6 months age}) \\
+\hat{\beta}_2 &= -0.65 \quad (\text{OR} = 0.52 \text{ for net users}) \\
+\hat{\beta}_3 &= -0.12 \quad (\text{OR} = 0.89 \text{ per maternal education level}) \\
+\hat{\beta}_4 &= -0.05 \quad (\text{OR} = 0.95 \text{ per wealth quintile})
+\end{aligned}
+\]
+
+Interpretation: Bed net use provides the strongest protection, reducing odds of malaria by 48\%.
+\end{frame}
+\begin{frame}{Challenges and Solutions for MLE in LMICs}
+Challenges for MLE-based analysis in resource-limited settings:
+
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Challenge} & \textbf{Impact} & \textbf{Solution} \\
+\midrowcolor
+Sample size limitations | Unstable estimates, wide CIs | Multi-site collaboration, pooling data |
+Missing data | Biased estimates | Multiple imputation, sensitivity analysis |
+Complex sampling | Standard errors underestimated | Survey design-based analysis |
+Computational resources | Limited software access | Open-source tools (R, Python) \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Complex survey analysis in MLE framework:
+\[
+\ell_{\text{survey}}(\boldsymbol{\beta}) = \sum_{h=1}^{H} \sum_{i=1}^{n_h} w_{hi} \ell_i(\boldsymbol{\beta})
+\]
+where $w_{hi}$ are survey weights accounting for sampling design.
+
+Software recommendations for LMIC researchers:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Software} & \textbf{Cost} & \textbf{Survey Analysis Capability} \\
+\midrowcolor
+R | Free | Comprehensive (survey package) |
+Stata | Commercial | Built-in survey commands |
+Python | Free | statsmodels with survey module |
+\bottomrule
+\end{tabular}}
+\end{center}
+\end{frame}
+\section{Summary}
+\begin{frame}{Key Takeaways}
+\begin{enumerate}
+1. MLE finds parameter values that maximize the probability of observing the sample data, providing statistically efficient and consistent estimates.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+2. The likelihood function $L(\theta) = \prod f(x_i;\theta)$ and log-likelihood $\ell(\theta) = \sum \log f(x_i;\theta)$ are central to MLE.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+3. Logistic regression coefficients are estimated by maximizing the Bernoulli log-likelihood, yielding adjusted odds ratios.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+4. The score function and Fisher information matrix provide the basis for estimation and inference.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+5. MLE-based methods are widely used in African public health research but require attention to sampling design and data quality.
+\end{enumerate}
+
+\begin{center}
+\textbf{Questions for Further Discussion}
+\end{center}
+
+How should researchers balance the need for complex multivariable models against the interpretability requirements for public health decision-making? What considerations are important when applying MLE-based methods to data from complex survey designs in LMIC contexts?
+\end{frame}
+\end{document}

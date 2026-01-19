@@ -1,0 +1,520 @@
+\documentclass[9pt,xcolor=dvipsnames,aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,graphicx,tikz,pgfplots,booktabs,siunitx}
+\usetikzlibrary{arrows,shapes,decorations.pathmorphing,decorations.pathreplacing,decorations.snapping,fit,positioning,calc,intersections,shapes.geometric,backgrounds}
+\usetheme[numbering=fraction,titleformat=smallcaps,sectionpage=progressbar]{metropolis}
+\usepackage[style=authoryear]{biblatex}
+\addbibresource{references.bib}
+\setbeamertemplate{bibliography item}[text]
+\graphicspath{{../assets/}}
+\DeclareMathOperator{\e}{e}
+\title{\Large SDS6210: Informatics for Health\\[0.3em]\small Advanced Quantitative: SQL for EHR Data Extraction}
+\author{\textbf{Cavin Otieno}}
+\institute{MSc Public Health Data Science\\Department of Health Informatics}
+\date{\today}
+\begin{document}
+\begin{frame}[noframenumbering,plain]
+    \maketitleslide
+\end{frame}
+\section{SQL Fundamentals for Health Data}
+\begin{frame}{Definition: SQL in Health Informatics}
+Structured Query Language (SQL) is the standard language for managing and querying relational databases. In health informatics, SQL serves as the fundamental tool for extracting, manipulating, and analyzing clinical data stored in electronic health record systems, health information exchanges, and research data warehouses.
+
+SQL statement categories:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Category} & \textbf{Statements} & \textbf{Health IT Use} \\
+\midrowcolor
+Data Definition (DDL) | CREATE, ALTER, DROP | Schema design, table modification |
+Data Manipulation (DML) | SELECT, INSERT, UPDATE, DELETE | Data extraction and modification |
+Data Control (DCL) | GRANT, REVOKE | Access control, privacy enforcement |
+Transaction Control | COMMIT, ROLLBACK | Ensuring data integrity \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+For clinical data analysis, the SELECT statement provides comprehensive analytical capabilities through its associated clauses: WHERE, GROUP BY, HAVING, JOIN, ORDER BY.
+
+SQL enables:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Application} & \textbf{Description} & \textbf{Example Output} \\
+\midrowcolor
+Cohort identification | Select patients meeting criteria | List of eligible study participants |
+Clinical queries | Extract specific data elements | Lab results, diagnoses, medications |
+Quality metrics | Calculate performance indicators | Screening rates, complication frequencies |
+Research data extraction | Prepare analysis datasets & De-identified research dataset \\
+\bottomrule
+end{tabular}}
+\end{center}
+\end{frame}
+\begin{frame}{Healthcare Database Schema}
+Health databases typically use normalized schemas to represent clinical entities:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+\node[draw,rectangle,fill=blue!20,minimum width=2.2cm,minimum height=1.2cm] (P) at (0,1.5) {Patient\\(\underline{patient\_id})};
+\node[draw,rectangle,fill=green!20,minimum width=2.2cm,minimum height=1.2cm] (E) at (4,1.5) {Encounter\\(\underline{encounter\_id}, patient\_id)};
+\node[draw,rectangle,fill=red!20,minimum width=2.2cm,minimum height=1.2cm] (D) at (8,1.5) {Diagnosis\\(\underline{dx\_id}, encounter\_id)};
+\node[draw,rectangle,fill=yellow!20,minimum width=2.2cm,minimum height=1.2cm] (M) at (4,-0.5) {Medication\\(\underline{med\_id}, encounter\_id)};
+\node[draw,rectangle,fill=purple!20,minimum width=2.2cm,minimum height=1.2cm] (L) at (8,-0.5) {Lab Result\\(\underline{lab\_id}, encounter\_id)};
+\draw[->,thick] (E) -- (P) node[midway,above] {FK: patient\_id};
+\draw[->,thick] (D) -- (E) node[midway,above] {FK: encounter\_id};
+\draw[->,thick] (M) -- (E) node[midway,right] {FK: encounter\_id};
+\draw[->,thick] (L) -- (E) node[midway,right] {FK: encounter\_id};
+\node[draw,ellipse,fill=gray!10,minimum width=11cm,minimum height=3.5cm] (Schema) at (4,0.5) {};
+\end{tikzpicture}
+\end{center}
+
+Primary keys (underlined) uniquely identify records; foreign keys (FK) establish relationships.
+
+Schema design principles:
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Principle} & \textbf{Benefit} & \textbf{Health Example} \\
+\midrowcolor
+Normalization | Reduces redundancy | One patient record, many encounters \\
+Referential integrity | Ensures data consistency | Diagnosis linked to valid encounter \\
+Atomic values | Enables precise queries | Separate columns for first/last name \\
+\bottomrule
+\end{tabular}}
+\end{center}
+\end{frame}
+\section{Basic SQL Queries}
+\begin{frame}{SELECT Statement Fundamentals}
+The basic structure of the SELECT statement:
+
+\begin{semiverbatim}
+SELECT column1, column2, ...
+FROM table_name
+WHERE condition
+ORDER BY column ASC|DESC;
+\end{semiverbatim}
+
+Example: Basic patient query
+\begin{semiverbatim}
+SELECT patient_id, first_name, last_name, date_of_birth, gender
+FROM patients
+WHERE gender = 'F'
+  AND date_of_birth >= '1990-01-01'
+ORDER BY last_name;
+\end{semiverbatim}
+
+Filtering with comparison operators:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Operator} & \textbf{Meaning} & \textbf{Example} \\
+\midrowcolor
+= | Equal to | status = 'active' |
+<> or != | Not equal to | status <> 'deceased' |
+<, >, <=, >= | Comparison | age >= 65 |
+BETWEEN | Range | age BETWEEN 18 AND 65 |
+IN | List membership | status IN ('active', 'pending') |
+LIKE | Pattern matching | last\_name LIKE 'M\%' |
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Aggregate functions:
+\begin{center}
+\scalebox{0.75}{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Function} & \textbf{Description} & \textbf{Example} \\
+\midrowcolor
+COUNT() | Number of rows | COUNT(*) for total |
+SUM() | Sum of values | SUM(amount) |
+AVG() | Average value | AVG(lab\_value) |
+MIN(), MAX() | Extreme values | MIN(admission\_date) \\
+\bottomrule
+\end{tabular}}
+\end{center}
+\end{frame}
+\begin{frame}{JOIN Operations}
+JOIN operations combine data from multiple tables based on related columns:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+\node[draw,rectangle,fill=blue!20,minimum width=2.5cm,minimum height=1cm] (P) at (0,1) {Patients};
+\node[draw,rectangle,fill=green!20,minimum width=2.5cm,minimum height=1cm] (E) at (4,1) {Encounters};
+\draw[->,thick] (1.5,1) -- (2.5,1) node[midway,above] {patient\_id};
+\node at (0,-0.5) {\texttt{INNER JOIN}};
+\node at (4,-0.5) {\texttt{INNER JOIN}};
+\node[draw,rectangle,fill=red!20,minimum width=1.5cm,minimum height=0.8cm] (R) at (2,-1.5) {Result};
+\end{tikzpicture}
+\end{center}
+
+Example: Get patient demographics with encounter dates
+\begin{semiverbatim}
+SELECT p.patient_id, p.first_name, p.last_name, 
+       e.encounter_date, e.encounter_type
+FROM patients p
+INNER JOIN encounters e ON p.patient_id = e.patient_id
+WHERE e.encounter_date BETWEEN '2024-01-01' AND '2024-12-31';
+\end{semiverbatim}
+
+Types of JOINs:
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{JOIN Type} & \textbf{Result} & \textbf{Use Case} \\
+\midrowcolor
+INNER JOIN | Only matching rows | Analysis with complete data |
+LEFT JOIN | All rows from left table | Include patients with no encounters |
+RIGHT JOIN | All rows from right table | Include encounters with patients |
+FULL OUTER JOIN | All rows from both & Comprehensive audit \\
+\bottomrule
+end{tabular}}
+\end{center}
+\end{frame}
+\begin{frame}{WHERE Clause for Clinical Criteria}
+The WHERE clause filters records based on clinical criteria:
+
+Example: Identify patients with diabetes complications
+\begin{semiverbatim}
+SELECT DISTINCT p.patient_id, p.first_name, p.last_name
+FROM patients p
+INNER JOIN encounters e ON p.patient_id = e.patient_id
+INNER JOIN diagnoses d ON e.encounter_id = d.encounter_id
+WHERE d.icd10_code LIKE 'E11.%'  -- Diabetes mellitus
+  AND d.icd10_code IN (
+    'E11.2%',  -- Diabetes with kidney complications
+    'E11.4%',  -- Diabetes with neurological complications  
+    'E11.5%',  -- Diabetes with circulatory complications
+    'E11.6%'   -- Diabetes with other specified complications
+  )
+  AND e.encounter_date >= '2023-01-01';
+\end{semiverbatim}
+
+Boolean operators for complex criteria:
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Operator} & \textbf{Description} & \textbf{Example} \\
+\midrowcolor
+AND | All conditions true | age > 65 AND diabetes = 1 |
+OR | Any condition true | heart\_failure OR COPD |
+NOT | Negation | NOT (hypertension = 1) |
+\bottomrule
+end{tabular}}
+\end{center}
+
+Subqueries for nested criteria:
+\begin{semiverbatim}
+SELECT patient_id, first_name, last_name
+FROM patients
+WHERE patient_id IN (
+    SELECT patient_id FROM medications 
+    WHERE drug_name = 'Metformin'
+);
+\end{semiverbatim}
+\end{frame}
+\section{Aggregation and Analysis}
+\begin{frame}{GROUP BY for Summary Statistics}
+The GROUP BY clause aggregates data across categories:
+
+Example: Count diagnoses by condition category
+\begin{semiverbatim}
+SELECT icd10_code_prefix, COUNT(DISTINCT patient_id) AS patient_count,
+       COUNT(DISTINCT encounter_id) AS encounter_count
+FROM (
+    SELECT LEFT(icd10_code, 3) AS icd10_code_prefix,
+           patient_id, encounter_id
+    FROM diagnoses d
+    INNER JOIN encounters e ON d.encounter_id = e.encounter_id
+    WHERE e.encounter_date >= '2024-01-01'
+) subquery
+GROUP BY icd10_code_prefix
+ORDER BY patient_count DESC;
+\end{semiverbatim}
+
+Example: Calculate average lab values by department
+\begin{semiverbatim}
+SELECT d.department_name,
+       AVG(lr.result_value) AS avg_glucose,
+       COUNT(lr.lab_id) AS test_count,
+       STDDEV(lr.result_value) AS glucose_stddev
+FROM lab_results lr
+INNER JOIN encounters e ON lr.encounter_id = e.encounter_id
+INNER JOIN departments d ON e.department_id = d.department_id
+WHERE lr.test_code = 'GLUCOSE'
+  AND lr.result_date BETWEEN '2024-01-01' AND '2024-06-30'
+GROUP BY d.department_name
+HAVING COUNT(lr.lab_id) >= 50  -- Exclude small samples
+ORDER BY avg_glucose DESC;
+\end{semiverbatim}
+\end{frame}
+\begin{frame}{CASE Statements for Clinical Categorization}
+The CASE statement creates derived categories from clinical data:
+
+Example: Categorize blood pressure readings
+\begin{semiverbatim}
+SELECT patient_id, encounter_date, result_value,
+       CASE 
+           WHEN result_value < 120 THEN 'Normal'
+           WHEN result_value BETWEEN 120 AND 129 THEN 'Elevated'
+           WHEN result_value BETWEEN 130 AND 139 THEN 'High Stage 1'
+           WHEN result_value >= 140 THEN 'High Stage 2'
+           ELSE 'Crisis'
+       END AS bp_category
+FROM lab_results
+WHERE test_code = 'SYSTOLIC_BP'
+  AND result_date >= '2024-01-01';
+\end{semiverbatim}
+
+Example: Create comorbidity index from diagnosis codes
+\begin{semiverbatim}
+SELECT patient_id,
+       SUM(CASE WHEN icd10_code LIKE 'E11.%' THEN 1 ELSE 0 END) AS diabetes_flag,
+       SUM(CASE WHEN icd10_code LIKE 'I10.%' THEN 1 ELSE 0 END) AS hypertension_flag,
+       SUM(CASE WHEN icd10_code LIKE 'I50.%' THEN 1 ELSE 0 END) AS heart_failure_flag,
+       SUM(CASE WHEN icd10_code LIKE 'J44.%' THEN 1 ELSE 0 END) AS copd_flag,
+       COUNT(DISTINCT CASE WHEN icd10_code LIKE 'E11.%' THEN icd10_code END) AS diabetes_count
+FROM diagnoses
+WHERE encounter_date >= '2023-01-01'
+GROUP BY patient_id;
+\end{semiverbatim}
+\end{frame}
+\begin{frame}{Window Functions for Time-Series Analysis}
+Window functions perform calculations across related rows without aggregation:
+
+Example: Time since previous encounter
+\begin{semiverbatim}
+SELECT patient_id, encounter_date,
+       LAG(encounter_date) OVER (
+           PARTITION BY patient_id 
+           ORDER BY encounter_date
+       ) AS previous_encounter_date,
+       encounter_date - LAG(encounter_date) OVER (
+           PARTITION BY patient_id 
+           ORDER BY encounter_date
+       ) AS days_since_last
+FROM encounters
+WHERE patient_id = 'PAT12345'
+ORDER BY encounter_date;
+\end{semiverbatim}
+
+Example: Rolling average of lab values
+\begin{semiverbatim}
+SELECT patient_id, result_date, result_value,
+       AVG(result_value) OVER (
+           PARTITION BY patient_id 
+           ORDER BY result_date
+           ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+       ) AS rolling_avg_3
+FROM lab_results
+WHERE test_code = 'HBA1C'
+ORDER BY patient_id, result_date;
+\end{semiverbatim}
+
+Window function types:
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Function} & \textbf{Description} & \textbf{Health Example} \\
+\midrowcolor
+LAG(), LEAD() | Previous/next row value | Time since last visit |
+AVG(), SUM() | Aggregated across window | Rolling averages |
+ROW\_NUMBER() | Sequential numbering | Rank encounters per patient \\
+RANK(), DENSE\_RANK() | Rank with/without ties | Severity ranking \\
+\bottomrule
+end{tabular}}
+\end{center}
+\end{frame}
+\section{Public Health Applications}
+\begin{frame}{Cohort Definition for Research}
+SQL enables precise cohort definition for clinical research:
+
+Example: Type 2 diabetes patients with poor glycemic control
+\begin{semiverbatim}
+WITH diabetes_patients AS (
+    SELECT DISTINCT p.patient_id
+    FROM patients p
+    INNER JOIN encounters e ON p.patient_id = e.patient_id
+    INNER JOIN diagnoses d ON e.encounter_id = d.encounter_id
+    WHERE d.icd10_code LIKE 'E11.%'  -- Type 2 diabetes
+      AND e.encounter_date >= '2022-01-01'
+),
+latest_hba1c AS (
+    SELECT patient_id, MAX(result_value) AS latest_hba1c
+    FROM lab_results
+    WHERE test_code = 'HBA1C'
+      AND result_date >= '2023-01-01'
+    GROUP BY patient_id
+)
+SELECT dp.patient_id, lh.latest_hba1c
+FROM diabetes_patients dp
+INNER JOIN latest_hba1c lh ON dp.patient_id = lh.patient_id
+WHERE lh.latest_hba1c > 8.0  -- Poor glycemic control
+ORDER BY lh.latest_hba1c DESC;
+\end{semiverbatim}
+
+Example: HIV patients with viral suppression
+\begin{semiverbatim}
+SELECT patient_id, 
+       MIN(viral_load) AS lowest_viral_load,
+       COUNT(*) AS vl_measurements
+FROM lab_results
+WHERE test_code = 'HIV_VL'
+  AND result_date BETWEEN '2023-01-01' AND '2023-12-31'
+GROUP BY patient_id
+HAVING MIN(viral_load) < 50  -- Suppressed
+   AND COUNT(*) >= 2;  -- At least 2 measurements
+\end{semiverbatim}
+\end{frame}
+\begin{frame}{Quality Metric Calculation}
+SQL supports healthcare quality measurement and reporting:
+
+Example: Diabetes care quality indicators
+\begin{semiverbatim}
+WITH diabetic_patients AS (
+    SELECT DISTINCT patient_id
+    FROM diagnoses 
+    WHERE icd10_code LIKE 'E11.%'
+      AND encounter_date >= '2023-01-01'
+),
+hba1c_tested AS (
+    SELECT patient_id, MAX(result_date) AS last_hba1c_date
+    FROM lab_results
+    WHERE test_code = 'HBA1C'
+      AND result_date BETWEEN '2023-01-01' AND '2023-12-31'
+    GROUP BY patient_id
+),
+eye_exam AS (
+    SELECT patient_id, COUNT(*) AS eye_exam_count
+    FROM procedures
+    WHERE procedure_code IN ('92250', '92270')  -- Eye exam codes
+      AND procedure_date BETWEEN '2023-01-01' AND '2023-12-31'
+    GROUP BY patient_id
+),
+nephropathy_screening AS (
+    SELECT patient_id, MAX(result_date) AS last_urine_albumin
+    FROM lab_results
+    WHERE test_code = 'MICROALBUMIN'
+      AND result_date BETWEEN '2023-01-01' AND '2023-12-31'
+    GROUP BY patient_id
+)
+SELECT 
+    COUNT(DISTINCT dp.patient_id) AS total_diabetic,
+    COUNT(DISTINCT ht.patient_id) AS hba1c_tested_count,
+    COUNT(DISTINCT ee.patient_id) AS eye_exam_count,
+    COUNT(DISTINCT ns.patient_id) AS nephropathy_screened_count
+FROM diabetic_patients dp
+LEFT JOIN hba1c_tested ht ON dp.patient_id = ht.patient_id
+LEFT JOIN eye_exam ee ON dp.patient_id = ee.patient_id
+LEFT JOIN nephropathy_screening ns ON dp.patient_id = ns.patient_id;
+\end{semiverbatim}
+\end{frame}
+\section{LMIC Context: Sub-Saharan Africa}
+\begin{frame}{SQL in Resource-Constrained Health Systems}
+SQL applications in African health information systems:
+
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Platform} & \textbf{Database} & \textbf{SQL Use Case} \\
+\midrowcolor
+OpenMRS | MySQL/PostgreSQL | Patient-level clinical queries \\
+DHIS2 | PostgreSQL | Aggregate indicator calculation, data export \\
+iHRIS | PostgreSQL | Health workforce tracking \\
+KEMRI Systems | Various | Research data extraction \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Example: DHIS2-style aggregate query for district reporting
+\begin{semiverbatim}
+SELECT facility_district,
+       DATE_TRUNC('month', period) AS month,
+       SUM(CASE WHEN indicator_code = 'ANC1' THEN value END) AS anc1_visits,
+       SUM(CASE WHEN indicator_code = 'DELIVERIES' THEN value END) AS deliveries,
+       SUM(CASE WHEN indicator_code = 'MALARIA_CASES' THEN value END) AS malaria_cases
+FROM agg_data
+WHERE period BETWEEN '2024-01-01' AND '2024-12-31'
+  AND org_unit_level = 3  -- District level
+GROUP BY facility_district, DATE_TRUNC('month', period)
+ORDER BY facility_district, month;
+\end{semiverbatim}
+
+Challenges for SQL use in LMICs:
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Challenge} & \textbf{Impact} & \textbf{Approach} \\
+\midrowcolor
+Limited training | Few staff with SQL skills | Training programs, user-friendly tools |
+Paper records | No data in databases | Prioritize digitization, hybrid approaches |
+Legacy systems | Non-standard schemas | Data migration, API integration \\
+\bottomrule
+end{tabular}}
+\end{center}
+\end{frame}
+\begin{frame}{Building SQL Capacity in African Health Systems}
+Strategies for developing SQL analytical capacity:
+
+Training approaches:
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Approach} & \textbf{Description} & \textbf{Target Audience} \\
+\midrowatic
+Basic query workshops | Hands-on SQL fundamentals | Health information officers |
+Advanced analytics | Complex queries, optimization | Data analysts, researchers |
+Mentorship programs | Pair with experienced analysts | Mid-career professionals |
+Online resources | Self-paced learning | All staff levels \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Recommended curriculum for health informatics training:
+\begin{center}
+\scalebox[0.75]{
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule \textbf{Module} & \textbf{Topics} & \textbf{Health Application} \\
+\midrowcolor
+Foundations | SELECT, WHERE, JOINs | Patient demographics, basic queries |
+Aggregations | GROUP BY, HAVING | Indicator calculation, reporting |
+Advanced queries | Subqueries, CTEs | Cohort definition, complex criteria |
+Analytics | Window functions, pivoting | Trend analysis, longitudinal data \\
+\bottomrule
+end{tabular}}
+\end{center}
+
+The Tanzania Health Information System Program has trained over 500 health information officers in SQL-based analysis, building sustainable analytical capacity across the country.
+\end{frame}
+\section{Summary}
+\begin{frame}{Key Takeaways}
+\begin{enumerate}
+1. SQL provides the fundamental query capability for extracting clinical insights from relational health databases, from basic patient queries to complex research cohort definitions.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+2. JOIN operations enable analysis across related tables (patients, encounters, diagnoses, medications) using foreign key relationships.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+3. Aggregation with GROUP BY and filtering with HAVING support quality metric calculation and population-level analysis.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+4. Advanced features including CTEs, window functions, and CASE statements enable sophisticated clinical categorization and time-series analysis.
+\end{enumerate}
+
+\begin{enumerate}
+\resume{enumerate}
+5. Building SQL capacity in African health systems requires training programs, mentorship, and integration with existing health information platforms like OpenMRS and DHIS2.
+\end{enumerate}
+
+\begin{center}
+\textbf{Questions for Further Discussion}
+\end{center}
+
+How can health facilities in resource-constrained settings develop the SQL and analytical capabilities needed for evidence-based decision-making? What role can standardized query templates and dashboards play in bridging the analytical capacity gap?
+\end{frame}
+\end{document}
