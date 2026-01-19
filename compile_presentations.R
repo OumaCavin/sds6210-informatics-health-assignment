@@ -1,228 +1,153 @@
-#!/usr/bin/env Rscript
 # ============================================================================
 # LaTeX Beamer Presentation Compiler for Health Informatics Assignment
 # Author: Cavin Otieno
 # ============================================================================
 
-# Required packages (optional - script works without them)
-if (!require("tools", quietly = TRUE)) {
-  message("Package 'tools' not found, using base R functions only")
-}
-
-# ============================================================================
-# Configuration
+# SIMPLE INSTRUCTIONS:
+# 1. Copy ALL the code below (from line 1 to the end)
+# 2. Paste it ALL into R/RStudio console
+# 3. Press Enter to run
 # ============================================================================
 
-# Project root directory (where this script is located)
-project_root <- if (interactive()) {
-  dirname(sys.frame(1)$ofile)
-} else {
-  getwd()
-}
+cat("\n========================================\n")
+cat("  LaTeX Beamer Presentation Compiler\n")
+cat("  Health Informatics Assignment\n")
+cat("========================================\n\n")
 
-# Set working directory to project root
-setwd(project_root)
+# --- Step 1: Set project directory ---
+project_root <- getwd()
+cat(sprintf("Project directory: %s\n\n", project_root))
 
-# LaTeX compiler to use
+# --- Step 2: Find all .tex files ---
+cat("Finding .tex files...\n")
+tex_files <- list.files(
+  path = project_root,
+  pattern = "\\.tex$",
+  recursive = TRUE,
+  full.names = TRUE
+)
+# Remove hidden/system files
+tex_files <- tex_files[!grepl("/\\.", tex_files)]
+tex_files <- sort(tex_files)
+cat(sprintf("Found %d .tex files\n\n", length(tex_files)))
+
+# --- Step 3: Check for LaTeX compiler ---
 latex_engine <- "pdflatex"
+latex_path <- Sys.which(latex_engine)
 
-# Number of compilation passes (for references)
-passes <- 2
-
-# Output directory for PDFs
-output_dir <- file.path(project_root, "pdf_output")
-
-# ============================================================================
-# Helper Functions
-# ============================================================================
-
-#' Find all .tex files in the project
-#' @param root_dir Root directory to search
-#' @param pattern Pattern to match (default: *.tex)
-#' @return Vector of file paths
-find_tex_files <- function(root_dir = ".", pattern = "\\.tex$") {
-  files <- list.files(
-    path = root_dir,
-    pattern = pattern,
-    recursive = TRUE,
-    full.names = TRUE
-  )
-  # Filter out files starting with . and in certain directories
-  files <- files[!grepl("^\\./\\.", files)]
-  files <- files[!grepl("/\\.", files)]
-  return(files)
+if (latex_path == "") {
+  stop("\nERROR: pdflatex not found!\n",
+       "Please install a LaTeX distribution first:\n",
+       "  - Windows: Download MiKTeX from https://miktex.org\n",
+       "  - Mac: Download MacTeX from https://www.tug.org/mactex\n",
+       "  - Linux: Run: sudo apt install texlive-full\n")
 }
+cat(sprintf("LaTeX compiler: %s\n\n", latex_path))
 
-#' Compile a single LaTeX file
-#' @param tex_file Path to the .tex file
-#' @param engine LaTeX engine to use
-#' @param passes Number of compilation passes
-#' @return TRUE if successful, FALSE otherwise
-compile_latex_file <- function(tex_file, engine = "pdflatex", passes = 2) {
-  # Get file info
+# --- Step 4: Create output directory ---
+output_dir <- file.path(project_root, "pdf_output")
+if (!dir.exists(output_dir)) {
+  dir.create(output_dir, recursive = TRUE)
+}
+cat(sprintf("Output directory: %s\n\n", output_dir))
+
+# --- Step 5: Compile function ---
+compile_file <- function(tex_file) {
   file_dir <- dirname(tex_file)
   file_name <- basename(tex_file)
   base_name <- sub("\\.tex$", "", file_name)
 
-  # Change to file directory for compilation
   old_wd <- getwd()
   on.exit(setwd(old_wd), add = TRUE)
   setwd(file_dir)
 
-  message(sprintf("\n[%s] Compiling: %s", Sys.time(), file_name))
+  cat(sprintf("Compiling: %s\n", file_name))
 
-  # Build compile command
-  cmd <- sprintf("%s -interaction=nonstopmode -shell-escape %s",
-                 engine, file_name)
+  # Build command
+  cmd <- sprintf('%s -interaction=nonstopmode "%s"', latex_engine, file_name)
 
-  # Run compilation for specified passes
-  success <- FALSE
-  for (pass in 1:passes) {
-    message(sprintf("  Pass %d/%d...", pass, passes))
-
-    result <- tryCatch({
-      system(cmd, intern = FALSE, ignore.stdout = FALSE, ignore.stderr = FALSE)
-    }, error = function(e) {
-      message(sprintf("  Error: %s", e$message))
-      1
-    })
-
-    if (result == 0) {
-      success <- TRUE
-    }
+  # Compile (2 passes for references)
+  for (pass in 1:2) {
+    cat(sprintf("  Pass %d/2...\n", pass))
+    result <- system(cmd, intern = FALSE)
   }
+
+  # Check if PDF was created
+  pdf_file <- paste0(base_name, ".pdf")
+  if (file.exists(pdf_file)) {
+    # Preserve folder structure in output
+    rel_dir <- sub("^\\./", "", file_dir)
+    pdf_dest_dir <- if (rel_dir == ".") output_dir else file.path(output_dir, rel_dir)
+
+    if (!dir.exists(pdf_dest_dir)) {
+      dir.create(pdf_dest_dir, recursive = TRUE)
+    }
+
+    pdf_dest <- file.path(pdf_dest_dir, pdf_file)
+    file.copy(pdf_file, pdf_dest, overwrite = TRUE)
+    cat(sprintf("  SUCCESS: %s -> %s\n", pdf_file, pdf_dest))
+    return(TRUE)
+  } else {
+    cat(sprintf("  FAILED: %s\n", file_name))
+    return(FALSE)
+  }
+}
+
+# --- Step 6: Compile all files ---
+cat("========================================\n")
+cat("  Starting Compilation\n")
+cat("========================================\n\n")
+
+results <- list()
+success_count <- 0
+failed_count <- 0
+
+for (tex_file in tex_files) {
+  success <- compile_file(tex_file)
+  results[[tex_file]] <- success
 
   if (success) {
-    message(sprintf("  [SUCCESS] %s compiled successfully!", file_name))
-
-    # Move PDF to output directory if it exists
-    pdf_file <- paste0(base_name, ".pdf")
-    if (file.exists(pdf_file)) {
-      if (!dir.exists(output_dir)) {
-        dir.create(output_dir, recursive = TRUE)
-      }
-
-      # Preserve relative path structure
-      relative_dir <- sub("^\\./", "", file_dir)
-      pdf_output_dir <- if (relative_dir == ".") {
-        output_dir
-      } else {
-        file.path(output_dir, relative_dir)
-      }
-
-      if (!dir.exists(pdf_output_dir)) {
-        dir.create(pdf_output_dir, recursive = TRUE)
-      }
-
-      pdf_destination <- file.path(pdf_output_dir, pdf_file)
-      file.copy(pdf_file, pdf_destination, overwrite = TRUE)
-      message(sprintf("  PDF saved to: %s", pdf_destination))
-    }
+    success_count <- success_count + 1
   } else {
-    message(sprintf("  [FAILED] %s compilation failed!", file_name))
+    failed_count <- failed_count + 1
   }
-
-  return(success)
+  cat("\n")
 }
 
-#' Compile all Beamer presentations
-#' @param tex_files Vector of .tex file paths
-#' @param engine LaTeX engine
-#' @param passes Number of passes
-#' @return Summary data frame
-compile_all_presentations <- function(tex_files, engine = "pdflatex", passes = 2) {
-  message("============================================================")
-  message("  LaTeX Beamer Presentation Compiler")
-  message("  Health Informatics Assignment - Cavin Otieno")
-  message("============================================================")
-  message(sprintf("\nProject root: %s", project_root))
-  message(sprintf("LaTeX engine: %s", engine))
-  message(sprintf("Files to compile: %d", length(tex_files)))
-  message(sprintf("Output directory: %s", output_dir))
-  message("\nStarting compilation...\n")
+# --- Step 7: Print summary ---
+cat("========================================\n")
+cat("  Compilation Summary\n")
+cat("========================================\n")
+cat(sprintf("Total files:  %d\n", length(tex_files)))
+cat(sprintf("Successful:   %d\n", success_count))
+cat(sprintf("Failed:       %d\n", failed_count))
 
-  # Track results
-  results <- data.frame(
-    file = character(),
-    status = character(),
-    stringsAsFactors = FALSE
-  )
-
-  # Compile each file
-  for (tex_file in tex_files) {
-    success <- compile_latex_file(tex_file, engine, passes)
-    results <- rbind(results, data.frame(
-      file = tex_file,
-      status = ifelse(success, "SUCCESS", "FAILED"),
-      stringsAsFactors = FALSE
-    ))
+if (failed_count > 0) {
+  cat("\nFailed files:\n")
+  failed_files <- names(results)[!unlist(results)]
+  for (f in failed_files) {
+    cat(sprintf("  - %s\n", f))
   }
-
-  # Print summary
-  message("\n============================================================")
-  message("  Compilation Summary")
-  message("============================================================")
-
-  success_count <- sum(results$status == "SUCCESS")
-  failed_count <- sum(results$status == "FAILED")
-
-  message(sprintf("  Total files: %d", nrow(results)))
-  message(sprintf("  Successful:  %d", success_count))
-  message(sprintf("  Failed:      %d", failed_count))
-
-  if (failed_count > 0) {
-    message("\n  Failed files:")
-    failed_files <- results$status == "FAILED"
-    for (f in results$file[failed_files]) {
-      message(sprintf("    - %s", f))
-    }
-  }
-
-  message("\n============================================================")
-
-  return(results)
 }
 
-# ============================================================================
-# Main Execution
-# ============================================================================
+cat(sprintf("\nPDFs saved to: %s\n", output_dir))
+cat("========================================\n\n")
 
-main <- function() {
-  # Find all .tex files
-  tex_files <- find_tex_files(project_root)
+# --- Step 8: Save log file ---
+log_file <- file.path(project_root, "compilation_log.txt")
+writeLines(c(
+  sprintf("Compilation Log - %s", Sys.time()),
+  sprintf("Project: %s", project_root),
+  sprintf("LaTeX: %s", latex_path),
+  "",
+  "Results:",
+  paste(sprintf("  %s: %s", names(results),
+        ifelse(unlist(results), "SUCCESS", "FAILED")),
+      collapse = "\n"),
+  "",
+  sprintf("Total: %d, Success: %d, Failed: %d",
+          length(tex_files), success_count, failed_count)
+), log_file)
 
-  # Filter to only Beamer/presentation files (optional - include all)
-  beamer_files <- tex_files[grepl("\\.tex$", tex_files)]
-
-  # Sort files for consistent output
-  beamer_files <- sort(beamer_files)
-
-  # Compile all presentations
-  results <- compile_all_presentations(beamer_files, latex_engine, passes)
-
-  # Save compilation log
-  log_file <- file.path(project_root, "compilation_log.txt")
-  writeLines(c(
-    sprintf("Compilation Log - %s", Sys.time()),
-    sprintf("Project: %s", project_root),
-    sprintf("Engine: %s", latex_engine),
-    "",
-    "Results:",
-    paste(sprintf("  %s: %s", results$file, results$status), collapse = "\n"),
-    "",
-    sprintf("Total: %d, Success: %d, Failed: %d",
-            nrow(results),
-            sum(results$status == "SUCCESS"),
-            sum(results$status == "FAILED"))
-  ), log_file)
-
-  message(sprintf("\nCompilation log saved to: %s", log_file))
-
-  # Return results for programmatic use
-  return(results)
-}
-
-# Run if executed as script
-if (!interactive() || identical(Sys.getenv("RUN_MAIN"), "TRUE")) {
-  main()
-}
+cat(sprintf("Log saved to: %s\n", log_file))
+cat("\nDone! All compilations complete.\n\n")
